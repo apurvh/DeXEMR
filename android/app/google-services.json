@@ -1,0 +1,167 @@
+{
+  "project_info": {
+    "project_number": "668690350208",
+    "firebase_url": "https://dexai-b6bea.firebaseio.com",
+    "project_id": "dexai-b6bea",
+    "storage_bucket": "dexai-b6bea.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668690350208:android:514c3d89e7e08796",
+        "android_client_info": {
+          "package_name": "dextechnologies.dexai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "668690350208-081il46fmj5v9mee96u8hrh2ll8au6bv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexai",
+            "certificate_hash": "e5708477698119114f6a0ae0d4f01af29d833769"
+          }
+        },
+        {
+          "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF9WB4AsNsCGoLm7KXxssYbPYZSs2xnog"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668690350208:android:0efc7777dce67034",
+        "android_client_info": {
+          "package_name": "dextechnologies.dexaiforPatient"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "668690350208-tc3p9mb0gu13sqtasfln2l5ln4nvdgav.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexaiforPatient",
+            "certificate_hash": "926a2ad227de708c026b708841e620bfc7460274"
+          }
+        },
+        {
+          "client_id": "668690350208-j1akctloai0v1a6ihb5u398sansakqoq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexaiforPatient",
+            "certificate_hash": "e5708477698119114f6a0ae0d4f01af29d833769"
+          }
+        },
+        {
+          "client_id": "668690350208-sbj04bdfu28iss9lhsnpldui7914ue6m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexaiforPatient",
+            "certificate_hash": "af326426efa2ba0ac99ddc60c3037a2023fc5d9e"
+          }
+        },
+        {
+          "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF9WB4AsNsCGoLm7KXxssYbPYZSs2xnog"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:668690350208:android:49158826998f095a",
+        "android_client_info": {
+          "package_name": "dextechnologies.dexfordoctor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "668690350208-cm22agdohpredkgj12idnqdschqid9fo.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexfordoctor",
+            "certificate_hash": "74ef367f3648c3064174f4f45cd2944429d58666"
+          }
+        },
+        {
+          "client_id": "668690350208-gp023lignr85qiva4up1k8nh44c47bk8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dextechnologies.dexfordoctor",
+            "certificate_hash": "e5708477698119114f6a0ae0d4f01af29d833769"
+          }
+        },
+        {
+          "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF9WB4AsNsCGoLm7KXxssYbPYZSs2xnog"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "668690350208-lhrqdsu1ias3h9lt7og69jh6l2n76s75.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
