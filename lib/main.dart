@@ -23,6 +23,9 @@ final googleSignIn = new GoogleSignIn();
 
 String _emailID;
 
+//NAME TO BE USED TO LOAD PATIENT EMR
+String patientCode;
+
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
@@ -517,7 +520,7 @@ class _ListScreenState extends State<ListScreen> {
               color: Colors.grey[400],
             ),
             title: new Text(
-              snapshot.value["name"],
+              snapshot.value["newName"],
               style: new TextStyle(
                   color: Colors.grey[900], fontWeight: FontWeight.bold),
             ),
@@ -525,10 +528,47 @@ class _ListScreenState extends State<ListScreen> {
               snapshot.value["dateStamp"],
               style: new TextStyle(color: Colors.grey[800]),
             ),
+            onTap: () {
+              patientCode = snapshot.value["newName"]+"-"+snapshot.value["phone"];
+              print("Redirected to EMR and patientCode: "+patientCode);
+              Navigator
+                  .of(context)
+                  .push(new MaterialPageRoute(builder: (context) {
+                return new EMRPage();
+              }));
+            },
           ),
           new Divider(),
         ],
       );
     }
+  }
+}
+
+
+//THIS RENDERS EMR
+class EMRPage extends StatefulWidget {
+  @override
+  _EMRPageState createState() => new _EMRPageState();
+}
+
+class _EMRPageState extends State<EMRPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new Column(
+      children: <Widget>[
+        new Flexible(
+          child: new FirebaseAnimatedList(
+            query: null,
+            itemBuilder: null,
+          ),
+        ),
+      ],
+    );
   }
 }
