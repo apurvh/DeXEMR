@@ -25,6 +25,7 @@ String _emailID;
 
 //NAME TO BE USED TO LOAD PATIENT EMR
 String patientCode;
+String patientKey;
 
 void main() => runApp(new MyApp());
 
@@ -514,11 +515,7 @@ class _ListScreenState extends State<ListScreen> {
       return new Column(
         children: <Widget>[
           new ListTile(
-            leading: new Icon(
-              Icons.done_all,
-              size: 15.0,
-              color: Colors.grey[400],
-            ),
+            leading: colorOfTick(snapshot),
             title: new Text(
               snapshot.value["newName"],
               style: new TextStyle(
@@ -529,10 +526,18 @@ class _ListScreenState extends State<ListScreen> {
               style: new TextStyle(color: Colors.grey[800]),
             ),
             onTap: () {
+              //GET KEY AND PASS IT
+              patientKey = snapshot.key;
+              print("patientKey: " + patientKey);
+              referenceToRecords.child(patientKey).update({"seen": 1});
+
+              //SET PATIENT CODE WHICH IS USED TO LAOD PATIENT EMR
               patientCode = snapshot.value["newName"] +
                   "-" +
                   snapshot.value["phone"].toString();
               print("Redirected to EMR and patientCode: " + patientCode);
+
+              //MATERIAL ROUTE TO EMR
               Navigator
                   .of(context)
                   .push(new MaterialPageRoute(builder: (context) {
@@ -542,6 +547,24 @@ class _ListScreenState extends State<ListScreen> {
           ),
           new Divider(),
         ],
+      );
+    }
+  }
+
+  //RENDERS COLOR OF TICK IN RECORDS LIST
+  Widget colorOfTick(snapshot) {
+    if (snapshot.value["seen"] == 1) {
+      return new Icon(
+        Icons.done_all,
+        size: 22.0,
+        color: Colors.teal[600],
+
+      );
+    } else {
+      return new Icon(
+        Icons.done_all,
+        size: 15.0,
+        color: Colors.grey[400],
       );
     }
   }
@@ -570,14 +593,15 @@ class _EMRPageState extends State<EMRPage> {
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
+        leading: new IconButton(
+            icon: new Icon(Icons.close),
+            onPressed: () {
+              Navigator.pop(context);
+            }),
         title: new Text(patientCode.split("-")[0]),
         automaticallyImplyLeading: false,
         actions: <Widget>[
-          new IconButton(
-              icon: new Icon(Icons.close),
-              onPressed: () {
-                Navigator.pop(context);
-              }),
+          //add ability to collapse the list ie remove empty content
         ],
       ),
       body: new Column(
@@ -589,19 +613,28 @@ class _EMRPageState extends State<EMRPage> {
                   Animation<double> animation, int i) {
                 return new Container(
                   child: new Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 10.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 10.0),
                     child: new Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        new Text(snapshot.value["head"],style: new TextStyle(fontWeight: FontWeight.bold,color: Colors.teal),),
-                        new Text(snapshot.value["con"].toString(),style: new TextStyle(fontSize: 18.0),)
+                        new Text(
+                          snapshot.value["head"],
+                          style: new TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.teal),
+                        ),
+                        new Text(
+                          snapshot.value["con"].toString(),
+                          style: new TextStyle(fontSize: 18.0),
+                        )
                       ],
                     ),
                   ),
                 );
               },
 //              sort: (a, b) => b.key.compareTo(a.key),
+              defaultChild: new Center(child: new Text("Loading...")),
             ),
           ),
         ],
