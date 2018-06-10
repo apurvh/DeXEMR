@@ -32,11 +32,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'DeX - AutoCollect',
+      title: 'DeX - AutoEMR',
       theme: new ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: new MyHomePage(title: 'DeX - AutoCollect'),
+      home: new MyHomePage(title: 'DeX - AutoEMR'),
     );
   }
 }
@@ -529,8 +529,10 @@ class _ListScreenState extends State<ListScreen> {
               style: new TextStyle(color: Colors.grey[800]),
             ),
             onTap: () {
-              patientCode = snapshot.value["newName"]+"-"+snapshot.value["phone"];
-              print("Redirected to EMR and patientCode: "+patientCode);
+              patientCode = snapshot.value["newName"] +
+                  "-" +
+                  snapshot.value["phone"].toString();
+              print("Redirected to EMR and patientCode: " + patientCode);
               Navigator
                   .of(context)
                   .push(new MaterialPageRoute(builder: (context) {
@@ -545,7 +547,6 @@ class _ListScreenState extends State<ListScreen> {
   }
 }
 
-
 //THIS RENDERS EMR
 class EMRPage extends StatefulWidget {
   @override
@@ -558,17 +559,53 @@ class _EMRPageState extends State<EMRPage> {
     super.initState();
   }
 
+  final referenceToEMR = FirebaseDatabase.instance
+      .reference()
+      .child("DeXAutoCollect")
+      .child("EMR")
+      .child(_emailID.replaceAll(".", " "))
+      .child(patientCode);
+
   @override
   Widget build(BuildContext context) {
-    return new Column(
-      children: <Widget>[
-        new Flexible(
-          child: new FirebaseAnimatedList(
-            query: null,
-            itemBuilder: null,
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text(patientCode.split("-")[0]),
+        automaticallyImplyLeading: false,
+        actions: <Widget>[
+          new IconButton(
+              icon: new Icon(Icons.close),
+              onPressed: () {
+                Navigator.pop(context);
+              }),
+        ],
+      ),
+      body: new Column(
+        children: <Widget>[
+          new Flexible(
+            child: new FirebaseAnimatedList(
+              query: referenceToEMR,
+              itemBuilder: (_, DataSnapshot snapshot,
+                  Animation<double> animation, int i) {
+                return new Container(
+                  child: new Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0,horizontal: 10.0),
+                    child: new Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        new Text(snapshot.value["head"],style: new TextStyle(fontWeight: FontWeight.bold,color: Colors.teal),),
+                        new Text(snapshot.value["con"].toString(),style: new TextStyle(fontSize: 18.0),)
+                      ],
+                    ),
+                  ),
+                );
+              },
+//              sort: (a, b) => b.key.compareTo(a.key),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
