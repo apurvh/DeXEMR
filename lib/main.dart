@@ -558,7 +558,6 @@ class _ListScreenState extends State<ListScreen> {
         Icons.done_all,
         size: 22.0,
         color: Colors.teal[600],
-
       );
     } else {
       return new Icon(
@@ -611,27 +610,7 @@ class _EMRPageState extends State<EMRPage> {
               query: referenceToEMR,
               itemBuilder: (_, DataSnapshot snapshot,
                   Animation<double> animation, int i) {
-                return new Container(
-                  child: new Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 8.0, horizontal: 10.0),
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        new Text(
-                          snapshot.value["head"],
-                          style: new TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.teal),
-                        ),
-                        new Text(
-                          snapshot.value["con"].toString(),
-                          style: new TextStyle(fontSize: 18.0),
-                        )
-                      ],
-                    ),
-                  ),
-                );
+                return textRenderForEMR(snapshot);
               },
 //              sort: (a, b) => b.key.compareTo(a.key),
               defaultChild: new Center(child: new Text("Loading...")),
@@ -640,5 +619,45 @@ class _EMRPageState extends State<EMRPage> {
         ],
       ),
     );
+  }
+
+  //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
+  Widget textRenderForEMR(snapshot) {
+    if (snapshot.value["head"].toString() == "DATE") {
+      return new Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: new Center(
+          child: new Text(
+            "------ "+snapshot.value["con"]+" ------",
+            style: new TextStyle(color: Colors.grey[500]),
+          ),
+        ),
+      );
+    } else if (snapshot.value["con"].toString() != "") {
+      return new Container(
+        child: new Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+          child: new Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              new Text(
+                snapshot.value["head"],
+                style: new TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal,
+                    fontSize: 14.0),
+              ),
+              new Text(
+                snapshot.value["con"].toString(),
+                style: new TextStyle(fontSize: 18.0),
+              )
+            ],
+          ),
+        ),
+      );
+    } else {
+      return new Container();
+    }
   }
 }
