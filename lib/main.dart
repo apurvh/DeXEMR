@@ -501,7 +501,7 @@ class _ListScreenState extends State<ListScreen> {
                 color: Colors.grey[400],
               ),
               title: new Text(
-                snapshot.value["name"].toString().split("_")[1],
+                snapshot.value["name"].toString().split(".")[0],
                 style: new TextStyle(color: Colors.grey[600]),
               ),
               trailing: new Text(
