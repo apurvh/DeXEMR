@@ -27,6 +27,9 @@ String _emailID;
 String patientCode;
 String patientKey;
 
+int durationForDeletePrevious;
+int stillUploadingLastOne;
+
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
@@ -59,6 +62,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int googleSilentChecker = 0;
 
   int stateBtnDeletePrev=0;
+
+  BuildContext sssss;
+
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +110,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
       );
     } else {
-      BuildContext sssss;
       return new Scaffold(
           appBar: new AppBar(
             title: new Text(widget.title),
@@ -186,11 +191,94 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               fontStyle: FontStyle.italic,
               color: Colors.blueGrey[200]),
         ),
-        onPressed: (){
-
+        onPressed: () {
+          print("alert");
+          if(stillUploadingLastOne==1){
+            Scaffold.of(sssss).showSnackBar(new SnackBar(
+              content: new Text(
+                "Still Uploading last file..",
+              ),
+              duration: new Duration(seconds: 4),
+            ));
+          }else{
+            alertDeletePrevious();
+          }
         },
       );
     }
+  }
+
+  Future<Null> alertDeletePrevious() async {
+    return showDialog<Null>(
+      context: sssss,
+      barrierDismissible: true, // user must tap button!
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          title: new Text('Confirm:'),
+          content: new SingleChildScrollView(
+            child: new ListBody(
+              children: <Widget>[
+                new Text('Delete previous recording?'),
+                new Text('Duration:'),
+                new Text(durationForDeletePrevious.toString()+" Seconds",style: TextStyle(color: Colors.red,fontSize: 25.0),),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text('Yes'),
+              onPressed: () {
+
+                  deletePreviousFunction();
+                  stateBtnDeletePrev=0;
+                  Scaffold.of(sssss).showSnackBar(new SnackBar(
+                    content: new Text(
+                      "Deleted...",
+                    ),
+                    duration: new Duration(seconds: 4),
+                  ));
+
+                Navigator.of(context).pop();
+                setState(() {});
+
+              },
+            ),
+            new FlatButton(
+              child: new Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  Future deletePreviousFunction()async {
+
+    String snapShotKeyToDel;
+    //get key
+    await FirebaseDatabase.instance.reference()
+        .child("DeXAutoCollect")
+        .child("list")
+        .child(_emailID.replaceAll(".", " "))
+        .limitToLast(1).once().then((DataSnapshot snapshot){
+
+      Map map = snapshot.value;
+      snapShotKeyToDel = map.keys.toList()[0].toString();
+      print("Deleting: "+snapShotKeyToDel);
+
+    });
+
+    //delete node by key
+    await FirebaseDatabase.instance.reference()
+        .child("DeXAutoCollect")
+        .child("list")
+        .child(_emailID.replaceAll(".", " "))
+        .child(snapShotKeyToDel)
+        .remove();
   }
 
   @override
@@ -278,6 +366,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
     print("RESULT IS: " + result);
 
+    stillUploadingLastOne = 1;
     //UPLOAD FILE AND PUSH FILE
     if (result != "Recording On ") {
       //UPLOAD FILE
@@ -309,6 +398,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       });
       _valueOfSwicth = false;
     }
+    stillUploadingLastOne=0;
   }
 
   //STOP WATCH INIT
@@ -328,6 +418,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget redButtonOnPressed() {
     if (_recordPauseSwitch.isEven) {
       stopWatch.stop();
+      durationForDeletePrevious = stopWatch.elapsed.inSeconds;
 //      print("stopwatch: "+stopWatch.elapsedMilliseconds.toString());
       stopWatch.reset();
       return new Container(
@@ -451,6 +542,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
     print("FollowUp $followUpStatus");
   }
+
 }
 
 //AFTER CLICKING LIST ICON ON MAIN SCREEN
