@@ -58,6 +58,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   //1 IS SILENT LOGGED IN
   int googleSilentChecker = 0;
 
+  int stateBtnDeletePrev=0;
+
   @override
   Widget build(BuildContext context) {
     //CHECK CURRENT USER.. THIS STAYS NULL UNTIL SILENT LOGIN CHECKER ?
@@ -133,15 +135,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   new RawMaterialButton(
                       splashColor: Colors.grey[100],
                       onPressed: () {
+                        stateBtnDeletePrev=1+stateBtnDeletePrev;
                         _recordPauseSwitch = _recordPauseSwitch + 1;
                         redButtonStateChannelFunction();
 
                         //SHOW SNACK BAR ABOUT UPLOADING
                         if (_recordPauseSwitch.isEven &&
                             _recordPauseSwitch != 0) {
-                          Scaffold
-                              .of(sssss)
-                              .showSnackBar(new SnackBar(
+                          Scaffold.of(sssss).showSnackBar(new SnackBar(
                                 content: new Text(
                                   "Uploading Audio File ...",
                                 ),
@@ -159,11 +160,36 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   new Padding(
                     padding: const EdgeInsets.all(18.0),
                     child: redButtonOnPressed2(),
+                  ),
+                  new Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: deletePrevious(),
                   )
                 ],
               ),
             );
           }));
+    }
+  }
+
+  Widget deletePrevious(){
+    if(stateBtnDeletePrev<2){
+      return Container();
+    }else if(stateBtnDeletePrev.isOdd){
+      return Container();
+    }
+    else{
+      return new FlatButton(
+        child: new Text(
+          "Delete previous?",
+          style: new TextStyle(
+              fontStyle: FontStyle.italic,
+              color: Colors.blueGrey[200]),
+        ),
+        onPressed: (){
+
+        },
+      );
     }
   }
 
@@ -612,7 +638,7 @@ class _EMRPageState extends State<EMRPage> {
         padding: const EdgeInsets.all(8.0),
         child: new Center(
           child: new Text(
-            "------ "+snapshot.value["con"]+" ------",
+            "------ " + snapshot.value["con"] + " ------",
             style: new TextStyle(color: Colors.grey[500]),
           ),
         ),
