@@ -127,54 +127,38 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             return new Container(
               color: Colors.grey[50],
               child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  new Card(
-                    color: Colors.grey[50],
-                    elevation: 0.0,
-                    child: new Column(
-                      children: <Widget>[
-                        new Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            new Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 18.0, bottom: 8.0),
-                              child: new RawMaterialButton(
-                                  splashColor: Colors.grey[100],
-                                  onPressed: () {
-                                    _recordPauseSwitch = _recordPauseSwitch + 1;
-                                    redButtonStateChannelFunction();
+                  new RawMaterialButton(
+                      splashColor: Colors.grey[100],
+                      onPressed: () {
+                        _recordPauseSwitch = _recordPauseSwitch + 1;
+                        redButtonStateChannelFunction();
 
-                                    //SHOW SNACK BAR ABOUT UPLOADING
-                                    if (_recordPauseSwitch.isEven &&
-                                        _recordPauseSwitch != 0) {
-                                      Scaffold
-                                          .of(sssss)
-                                          .showSnackBar(new SnackBar(
-                                            content: new Text(
-                                              "Uploading Audio File ...",
-                                            ),
-                                            duration: new Duration(seconds: 4),
-                                          ));
-                                    }
+                        //SHOW SNACK BAR ABOUT UPLOADING
+                        if (_recordPauseSwitch.isEven &&
+                            _recordPauseSwitch != 0) {
+                          Scaffold
+                              .of(sssss)
+                              .showSnackBar(new SnackBar(
+                                content: new Text(
+                                  "Uploading Audio File ...",
+                                ),
+                                duration: new Duration(seconds: 4),
+                              ));
+                        }
 
-                                    setState(() {});
-                                  },
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10.0, vertical: 18.0),
-                                  shape: new StadiumBorder(),
-                                  fillColor: Colors.grey[200],
-                                  child: redButtonOnPressed()),
-                            ),
-                          ],
-                        ),
-                        new Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: redButtonOnPressed2(),
-                        )
-                      ],
-                    ),
+                        setState(() {});
+                      },
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10.0, vertical: 18.0),
+                      shape: new StadiumBorder(),
+                      fillColor: Colors.grey[200],
+                      child: redButtonOnPressed()),
+                  new Padding(
+                    padding: const EdgeInsets.all(18.0),
+                    child: redButtonOnPressed2(),
                   )
                 ],
               ),
