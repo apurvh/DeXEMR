@@ -61,10 +61,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   //1 IS SILENT LOGGED IN
   int googleSilentChecker = 0;
 
-  int stateBtnDeletePrev=0;
+  int stateBtnDeletePrev = 0;
 
   BuildContext sssss;
-
 
   @override
   Widget build(BuildContext context) {
@@ -116,15 +115,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             actions: <Widget>[
               new IconButton(
                 icon: new Icon(
-                  Icons.library_books,
+                  Icons.help_outline,
                   color: Colors.grey[100],
                 ),
                 onPressed: () {
-                  Navigator
-                      .of(context)
-                      .push(new MaterialPageRoute(builder: (context) {
-                    return new ListScreen();
-                  }));
+
                 },
               ),
             ],
@@ -137,10 +132,37 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  new Row(
+                    children: <Widget>[
+                      new FlatButton.icon(
+                        label: new Text("12/40"),
+                        icon: new Icon(Icons.account_balance_wallet),
+                        onPressed: (){},
+                        textColor: Colors.blueGrey,
+                      ),
+                      new FlatButton.icon(
+                        label: new Text("Records"),
+                        icon: new Icon(Icons.library_books),
+                        onPressed: (){
+                          Navigator
+                              .of(context)
+                              .push(new MaterialPageRoute(builder: (context) {
+                            return new ListScreen();
+                          }));
+                        },
+                        textColor: Colors.blueGrey,
+                      ),
+                    ],
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  ),
+                  new Padding(
+                    padding: const EdgeInsets.only(bottom: 78.0,left: 10.0,right: 10.0),
+                    child: new Divider(color: Colors.blueGrey[300],),
+                  ),
                   new RawMaterialButton(
                       splashColor: Colors.grey[100],
                       onPressed: () {
-                        stateBtnDeletePrev=1+stateBtnDeletePrev;
+                        stateBtnDeletePrev = 1 + stateBtnDeletePrev;
                         _recordPauseSwitch = _recordPauseSwitch + 1;
                         redButtonStateChannelFunction();
 
@@ -167,8 +189,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     child: redButtonOnPressed2(),
                   ),
                   new Padding(
-                    padding: const EdgeInsets.all(18.0),
+                    padding: const EdgeInsets.only(bottom: 15.0),
                     child: deletePrevious(),
+                  ),
+                  new Padding(
+                    padding: const EdgeInsets.only(bottom: 0.0,left: 10.0,right: 10.0),
+                    child: new Divider(color: Colors.blueGrey[300],),
+                  ),
+                  new Row(
+                    children: <Widget>[
+                      new IconButton(icon: new Icon(Icons.format_align_justify,color: Colors.blueGrey,), onPressed: (){})
+                    ],
                   )
                 ],
               ),
@@ -177,30 +208,28 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  Widget deletePrevious(){
-    if(stateBtnDeletePrev<2){
+  Widget deletePrevious() {
+    if (stateBtnDeletePrev < 2) {
+      return Container(height: 20.0,);
+    } else if (stateBtnDeletePrev.isOdd) {
       return Container();
-    }else if(stateBtnDeletePrev.isOdd){
-      return Container();
-    }
-    else{
+    } else {
       return new FlatButton(
         child: new Text(
           "Delete previous?",
           style: new TextStyle(
-              fontStyle: FontStyle.italic,
-              color: Colors.blueGrey[200]),
+              fontStyle: FontStyle.italic, color: Colors.blueGrey[200]),
         ),
         onPressed: () {
           print("alert");
-          if(stillUploadingLastOne==1){
+          if (stillUploadingLastOne == 1) {
             Scaffold.of(sssss).showSnackBar(new SnackBar(
-              content: new Text(
-                "Still Uploading last file..",
-              ),
-              duration: new Duration(seconds: 4),
-            ));
-          }else{
+                  content: new Text(
+                    "Still Uploading last file..",
+                  ),
+                  duration: new Duration(seconds: 4),
+                ));
+          } else {
             alertDeletePrevious();
           }
         },
@@ -220,7 +249,10 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               children: <Widget>[
                 new Text('Delete previous recording?'),
                 new Text('Duration:'),
-                new Text(durationForDeletePrevious.toString()+" Seconds",style: TextStyle(color: Colors.red,fontSize: 25.0),),
+                new Text(
+                  durationForDeletePrevious.toString() + " Seconds",
+                  style: TextStyle(color: Colors.red, fontSize: 25.0),
+                ),
               ],
             ),
           ),
@@ -228,19 +260,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             new FlatButton(
               child: new Text('Yes'),
               onPressed: () {
-
-                  deletePreviousFunction();
-                  stateBtnDeletePrev=0;
-                  Scaffold.of(sssss).showSnackBar(new SnackBar(
-                    content: new Text(
-                      "Deleted...",
-                    ),
-                    duration: new Duration(seconds: 4),
-                  ));
+                deletePreviousFunction();
+                stateBtnDeletePrev = 0;
+                Scaffold.of(sssss).showSnackBar(new SnackBar(
+                      content: new Text(
+                        "Deleted...",
+                      ),
+                      duration: new Duration(seconds: 4),
+                    ));
 
                 Navigator.of(context).pop();
                 setState(() {});
-
               },
             ),
             new FlatButton(
@@ -255,25 +285,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     );
   }
 
-
-  Future deletePreviousFunction()async {
-
+  Future deletePreviousFunction() async {
     String snapShotKeyToDel;
     //get key
-    await FirebaseDatabase.instance.reference()
+    await FirebaseDatabase.instance
+        .reference()
         .child("DeXAutoCollect")
         .child("list")
         .child(_emailID.replaceAll(".", " "))
-        .limitToLast(1).once().then((DataSnapshot snapshot){
-
+        .limitToLast(1)
+        .once()
+        .then((DataSnapshot snapshot) {
       Map map = snapshot.value;
       snapShotKeyToDel = map.keys.toList()[0].toString();
-      print("Deleting: "+snapShotKeyToDel);
-
+      print("Deleting: " + snapShotKeyToDel);
     });
 
     //delete node by key
-    await FirebaseDatabase.instance.reference()
+    await FirebaseDatabase.instance
+        .reference()
         .child("DeXAutoCollect")
         .child("list")
         .child(_emailID.replaceAll(".", " "))
@@ -398,7 +428,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       });
       _valueOfSwicth = false;
     }
-    stillUploadingLastOne=0;
+    stillUploadingLastOne = 0;
   }
 
   //STOP WATCH INIT
@@ -499,23 +529,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     if (_recordPauseSwitch.isEven) {
       return new Container();
     } else {
-      return new Column(
-        children: <Widget>[
-          new SwitchListTile(
-              title: new Text(
-                'Previous/Followup patient',
-                style: new TextStyle(color: Colors.teal),
-              ),
-              activeColor: Colors.teal,
-              secondary: new Icon(
-                Icons.first_page,
-                color: Colors.teal,
-              ),
-              value: _valueOfSwicth,
-              onChanged: (bool value) {
-                _onSwitchChanged(value);
-              })
-        ],
+      return new Container(
+//        child: new Column(
+//          children: <Widget>[
+//            new SwitchListTile(
+//                title: new Text(
+//                  'Previous/Followup patient',
+//                  style: new TextStyle(color: Colors.teal),
+//                ),
+//                activeColor: Colors.teal,
+//                secondary: new Icon(
+//                  Icons.first_page,
+//                  color: Colors.teal,
+//                ),
+//                value: _valueOfSwicth,
+//                onChanged: (bool value) {
+//                  _onSwitchChanged(value);
+//                })
+//          ],
+//        ),
       );
     }
   }
@@ -542,7 +574,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
     print("FollowUp $followUpStatus");
   }
-
 }
 
 //AFTER CLICKING LIST ICON ON MAIN SCREEN
