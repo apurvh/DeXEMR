@@ -118,9 +118,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   Icons.help_outline,
                   color: Colors.grey[100],
                 ),
-                onPressed: () {
-
-                },
+                onPressed: () {},
               ),
             ],
           ),
@@ -137,13 +135,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       new FlatButton.icon(
                         label: new Text("12/40"),
                         icon: new Icon(Icons.account_balance_wallet),
-                        onPressed: (){},
+                        onPressed: () {},
                         textColor: Colors.blueGrey,
                       ),
                       new FlatButton.icon(
                         label: new Text("Records"),
                         icon: new Icon(Icons.library_books),
-                        onPressed: (){
+                        onPressed: () {
                           Navigator
                               .of(context)
                               .push(new MaterialPageRoute(builder: (context) {
@@ -156,28 +154,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   ),
                   new Padding(
-                    padding: const EdgeInsets.only(bottom: 78.0,left: 10.0,right: 10.0),
-                    child: new Divider(color: Colors.blueGrey[300],),
+                    padding: const EdgeInsets.only(
+                        bottom: 78.0, left: 10.0, right: 10.0),
+                    child: new Divider(
+                      color: Colors.blueGrey[300],
+                    ),
                   ),
                   new RawMaterialButton(
                       splashColor: Colors.grey[100],
                       onPressed: () {
                         stateBtnDeletePrev = 1 + stateBtnDeletePrev;
                         _recordPauseSwitch = _recordPauseSwitch + 1;
-                        redButtonStateChannelFunction();
 
-                        //SHOW SNACK BAR ABOUT UPLOADING
+                        //CHECK IF FOLLOWUP PATIENT
                         if (_recordPauseSwitch.isEven &&
                             _recordPauseSwitch != 0) {
-                          Scaffold.of(sssss).showSnackBar(new SnackBar(
-                                content: new Text(
-                                  "Uploading Audio File ...",
-                                ),
-                                duration: new Duration(seconds: 4),
-                              ));
+                          alertTapToSaveCheckFollowupPatient();
+                          setState(() {});
+                        } else {
+                          redButtonStateChannelFunction();
+                          setState(() {});
                         }
-
-                        setState(() {});
                       },
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10.0, vertical: 18.0),
@@ -193,12 +190,20 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     child: deletePrevious(),
                   ),
                   new Padding(
-                    padding: const EdgeInsets.only(bottom: 0.0,left: 10.0,right: 10.0),
-                    child: new Divider(color: Colors.blueGrey[300],),
+                    padding: const EdgeInsets.only(
+                        bottom: 0.0, left: 10.0, right: 10.0),
+                    child: new Divider(
+                      color: Colors.blueGrey[300],
+                    ),
                   ),
                   new Row(
                     children: <Widget>[
-                      new IconButton(icon: new Icon(Icons.format_align_justify,color: Colors.blueGrey,), onPressed: (){})
+                      new IconButton(
+                          icon: new Icon(
+                            Icons.format_align_justify,
+                            color: Colors.blueGrey,
+                          ),
+                          onPressed: () {})
                     ],
                   )
                 ],
@@ -208,9 +213,67 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
+  Future alertTapToSaveCheckFollowupPatient() async {
+    return showDialog<Null>(
+      context: sssss,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          title: new Text('Is this a Followup Patient?'),
+          content: new SingleChildScrollView(
+            child: new ListBody(
+              children: <Widget>[],
+            ),
+          ),
+          actions: <Widget>[
+
+            new FlatButton.icon(
+              icon:new Icon(Icons.done_all,size: 35.0,),
+              label: new Text(
+                'Yes',
+                style: new TextStyle(fontSize: 15.0),
+              ),
+              onPressed: () {
+                followUpStatus = 1;
+                redButtonStateChannelFunction();
+                Navigator.of(context).pop();
+                Scaffold.of(sssss).showSnackBar(new SnackBar(
+                      content: new Text(
+                        "Uploading Audio File ...",
+                      ),
+                      duration: new Duration(seconds: 4),
+                    ));
+              },
+            ),
+            new FlatButton.icon(
+              icon:new Icon(Icons.close,size: 35.0,),
+              label: new Text(
+                'No',
+                style: new TextStyle(fontSize: 15.0),
+              ),
+              onPressed: () {
+                followUpStatus = 0;
+                redButtonStateChannelFunction();
+                Navigator.of(context).pop();
+                Scaffold.of(sssss).showSnackBar(new SnackBar(
+                      content: new Text(
+                        "Uploading Audio File ...",
+                      ),
+                      duration: new Duration(seconds: 4),
+                    ));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget deletePrevious() {
     if (stateBtnDeletePrev < 2) {
-      return Container(height: 20.0,);
+      return Container(
+        height: 20.0,
+      );
     } else if (stateBtnDeletePrev.isOdd) {
       return Container();
     } else {
@@ -451,6 +514,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       durationForDeletePrevious = stopWatch.elapsed.inSeconds;
 //      print("stopwatch: "+stopWatch.elapsedMilliseconds.toString());
       stopWatch.reset();
+
       return new Container(
         child: new Column(
           children: <Widget>[
@@ -548,7 +612,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //                })
 //          ],
 //        ),
-      );
+          );
     }
   }
 
