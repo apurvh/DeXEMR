@@ -6,17 +6,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:math';
-import 'dart:io';
-import 'package:audioplayer/audioplayer.dart';
-import 'package:path_provider/path_provider.dart';
 
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'dart:convert';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:io';
+
 import 'package:intl/intl.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -640,6 +634,19 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 //AFTER CLICKING LIST ICON ON MAIN SCREEN
 class ListScreen extends StatefulWidget {
   @override
@@ -765,6 +772,23 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //THIS RENDERS EMR
 class EMRPage extends StatefulWidget {
