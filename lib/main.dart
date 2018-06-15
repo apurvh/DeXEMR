@@ -11,6 +11,7 @@ import 'dart:io';
 
 import 'package:intl/intl.dart';
 
+import 'package:dex_for_doctor/popGuides.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -26,10 +27,10 @@ int durationForDeletePrevious;
 int stillUploadingLastOne;
 
 //WALLET VALUE
-int walletCurr=0;
-int walletAvail=0;
+int walletCurr = 0;
+int walletAvail = 0;
 
-int runOnceOnStartUp=0;
+int runOnceOnStartUp = 0;
 
 void main() => runApp(new MyApp());
 
@@ -110,18 +111,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
       );
     } else {
-      loadInitialValues();  //such as wallet values
+      loadInitialValues(); //such as wallet values
       return new Scaffold(
           appBar: new AppBar(
             title: new Text(widget.title),
             actions: <Widget>[
-              new IconButton(
-                icon: new Icon(
-                  Icons.help_outline,
-                  color: Colors.grey[100],
-                ),
-                onPressed: () {},
-              ),
+//              new IconButton(
+////                icon: new Icon(
+////                  Icons.help_outline,
+////                  color: Colors.grey[100],
+////                ),
+//                onPressed: () {},
+//              ),
             ],
           ),
           body: new Builder(builder: (BuildContext context) {
@@ -135,7 +136,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   new Row(
                     children: <Widget>[
                       new FlatButton.icon(
-                        label: new Text(walletCurr.toString()+"/"+walletAvail.toString()),
+                        label: new Text(walletCurr.toString() +
+                            "/" +
+                            walletAvail.toString()),
                         icon: new Icon(Icons.account_balance_wallet),
                         onPressed: () {},
                         textColor: Colors.blueGrey,
@@ -200,12 +203,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   ),
                   new Row(
                     children: <Widget>[
-                      new IconButton(
+                      new FlatButton.icon(
+                          label:new Text("Reference",style: new TextStyle(fontStyle: FontStyle.italic,color: Colors.blueGrey,),),
                           icon: new Icon(
-                            Icons.format_align_justify,
+                            Icons.info_outline,
                             color: Colors.blueGrey,
                           ),
-                          onPressed: () {})
+                          onPressed: () {
+                            showDialogFormat();
+                          },
+                      )
                     ],
                   )
                 ],
@@ -215,25 +222,69 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-  //NOT FUTURE BUT STREAM
-  Future loadInitialValues()async {
 
-    if(runOnceOnStartUp==0){
-      FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).onValue.listen((Event eve){
-        print("Stream: "+eve.snapshot.value.toString());
+  //SHOWS ALL RECORD DOCUMENTATION FORMAT
+  void showDialogFormat() {
+    showDialog(
+        context: context,
+        child: new SimpleDialog(
+          title: new Text("DeX listens for:",style: new TextStyle(color: Colors.teal),),
+          children: <Widget>[
+            new Divider(),
+            new Text(
+              "Demographics",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 16.0),
+            ),
+            new Text(
+              "Name, Age, Gender, Phone\n",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 16.0),
+            ),
+            new Text(
+              "Chief Complaints, Present History, Past History, Drug History, Allergies, Addictions, Menstrual History, Obsteric History\n",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
+            ),
+            new Text(
+              "General Examination, Local Examination, Opinions\n",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
+            ),
+            new Text(
+              "Investigations\n",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
+            ),
+            new Text(
+              "Treatment Plan, Prescriptions & Follow up\n",
+              style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
+            ),
+          ],
+          contentPadding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 30.0),
+          titlePadding: const EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 0.0),
+        ));
+  }
+
+
+
+  //NOT FUTURE BUT STREAM
+  Future loadInitialValues() async {
+    if (runOnceOnStartUp == 0) {
+      FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("wallet")
+          .child(_emailID.replaceAll(".", " "))
+          .onValue
+          .listen((Event eve) {
+        print("Stream: " + eve.snapshot.value.toString());
         walletAvail = eve.snapshot.value["avail"];
         walletCurr = eve.snapshot.value["curr"];
         print("wallet values loaded==> $walletCurr / $walletAvail");
 
+        setState(() {
+          runOnceOnStartUp = 1;
+        });
       });
 
-      setState(() {
-        runOnceOnStartUp=1;
-      });
     }
-
   }
-
 
   Future alertTapToSaveCheckFollowupPatient() async {
     return showDialog<Null>(
@@ -248,9 +299,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             ),
           ),
           actions: <Widget>[
-
             new FlatButton.icon(
-              icon:new Icon(Icons.done_all,size: 35.0,),
+              icon: new Icon(
+                Icons.done_all,
+                size: 35.0,
+              ),
               label: new Text(
                 'Yes',
                 style: new TextStyle(fontSize: 25.0),
@@ -266,12 +319,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       duration: new Duration(seconds: 4),
                     ));
                 updateWalletValue();
-
               },
               color: Colors.blueGrey[50],
             ),
             new FlatButton.icon(
-              icon:new Icon(Icons.close,size: 35.0,),
+              icon: new Icon(
+                Icons.close,
+                size: 35.0,
+              ),
               label: new Text(
                 'No',
                 style: new TextStyle(fontSize: 25.0),
@@ -287,10 +342,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       duration: new Duration(seconds: 4),
                     ));
                 updateWalletValue();
-
               },
               color: Colors.blueGrey[50],
-
             ),
           ],
         );
@@ -299,23 +352,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   //UPDATE VALUE BY 1 EVERYTIME A RECORD IS SENT
-  Future updateWalletValue() async{
-
-    await FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).once().then((DataSnapshot snap){
-        walletCurr = snap.value["curr"];
-
+  Future updateWalletValue() async {
+    await FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("wallet")
+        .child(_emailID.replaceAll(".", " "))
+        .once()
+        .then((DataSnapshot snap) {
+      walletCurr = snap.value["curr"];
     });
 
-    walletCurr = walletCurr +1;
+    walletCurr = walletCurr + 1;
 
-    await FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).update({
-      "curr":walletCurr
-    });
+    await FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("wallet")
+        .child(_emailID.replaceAll(".", " "))
+        .update({"curr": walletCurr});
 
-    setState(() {
-
-    });
-
+    setState(() {});
   }
 
   Widget deletePrevious() {
@@ -431,7 +488,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     print("INIT STATE RUN");
     googleSilentCheckerFunction();
-
   }
 
   //LOGIN BUTTON IS INIT
@@ -693,19 +749,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 //AFTER CLICKING LIST ICON ON MAIN SCREEN
 class ListScreen extends StatefulWidget {
   @override
@@ -831,23 +874,6 @@ class _ListScreenState extends State<ListScreen> {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //THIS RENDERS EMR
 class EMRPage extends StatefulWidget {
