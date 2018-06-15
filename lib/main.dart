@@ -21,8 +21,15 @@ String _emailID;
 String patientCode;
 String patientKey;
 
+//STATES
 int durationForDeletePrevious;
 int stillUploadingLastOne;
+
+//WALLET VALUE
+int walletCurr=0;
+int walletAvail=0;
+
+int runOnceOnStartUp=0;
 
 void main() => runApp(new MyApp());
 
@@ -103,6 +110,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
       );
     } else {
+      loadInitialValues();  //such as wallet values
       return new Scaffold(
           appBar: new AppBar(
             title: new Text(widget.title),
@@ -127,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   new Row(
                     children: <Widget>[
                       new FlatButton.icon(
-                        label: new Text("12/40"),
+                        label: new Text(walletCurr.toString()+"/"+walletAvail.toString()),
                         icon: new Icon(Icons.account_balance_wallet),
                         onPressed: () {},
                         textColor: Colors.blueGrey,
@@ -207,6 +215,26 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
+  //NOT FUTURE BUT STREAM
+  Future loadInitialValues()async {
+
+    if(runOnceOnStartUp==0){
+      FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).onValue.listen((Event eve){
+        print("Stream: "+eve.snapshot.value.toString());
+        walletAvail = eve.snapshot.value["avail"];
+        walletCurr = eve.snapshot.value["curr"];
+        print("wallet values loaded==> $walletCurr / $walletAvail");
+
+      });
+
+      setState(() {
+        runOnceOnStartUp=1;
+      });
+    }
+
+  }
+
+
   Future alertTapToSaveCheckFollowupPatient() async {
     return showDialog<Null>(
       context: sssss,
@@ -225,7 +253,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               icon:new Icon(Icons.done_all,size: 35.0,),
               label: new Text(
                 'Yes',
-                style: new TextStyle(fontSize: 15.0),
+                style: new TextStyle(fontSize: 25.0),
               ),
               onPressed: () {
                 followUpStatus = 1;
@@ -237,13 +265,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       ),
                       duration: new Duration(seconds: 4),
                     ));
+                updateWalletValue();
+
               },
+              color: Colors.blueGrey[50],
             ),
             new FlatButton.icon(
               icon:new Icon(Icons.close,size: 35.0,),
               label: new Text(
                 'No',
-                style: new TextStyle(fontSize: 15.0),
+                style: new TextStyle(fontSize: 25.0),
               ),
               onPressed: () {
                 followUpStatus = 0;
@@ -255,12 +286,36 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       ),
                       duration: new Duration(seconds: 4),
                     ));
+                updateWalletValue();
+
               },
+              color: Colors.blueGrey[50],
+
             ),
           ],
         );
       },
     );
+  }
+
+  //UPDATE VALUE BY 1 EVERYTIME A RECORD IS SENT
+  Future updateWalletValue() async{
+
+    await FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).once().then((DataSnapshot snap){
+        walletCurr = snap.value["curr"];
+
+    });
+
+    walletCurr = walletCurr +1;
+
+    await FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).update({
+      "curr":walletCurr
+    });
+
+    setState(() {
+
+    });
+
   }
 
   Widget deletePrevious() {
@@ -366,6 +421,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         .child(_emailID.replaceAll(".", " "))
         .child(snapShotKeyToDel)
         .remove();
+
+    //deleting upload file from storage
+//    print("file location: ")
   }
 
   @override
@@ -373,6 +431,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     print("INIT STATE RUN");
     googleSilentCheckerFunction();
+
   }
 
   //LOGIN BUTTON IS INIT
