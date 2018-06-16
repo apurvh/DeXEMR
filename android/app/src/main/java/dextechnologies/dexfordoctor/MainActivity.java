@@ -18,6 +18,7 @@ import android.util.Log;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 
@@ -90,7 +91,15 @@ public class MainActivity extends FlutterActivity {
 
     //FILE PATH KEEPING THESE ANYWHERE ELSE IS PAIN
     mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-    mFileName += "/DeX_"+System.currentTimeMillis()+".mp4";
+
+    //create /DeX subdirectory
+    File folderCreationFile= new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/DeX");
+    if(!folderCreationFile.exists()){
+      folderCreationFile.mkdir();
+    }
+
+
+    mFileName += "/DeX/DeX_"+System.currentTimeMillis()+".m4a";
 
     mRecorder = new MediaRecorder();
     mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
