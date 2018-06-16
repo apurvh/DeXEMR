@@ -2,6 +2,8 @@ package dextechnologies.dexfordoctor;
 
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +15,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.google.firebase.database.DatabaseReference;
@@ -42,15 +46,49 @@ public class MainActivity extends FlutterActivity {
   //FILE
   String mFileName = null;
 
+  int stateOfMRecorder=0; //0 stop, 1Record, 2Paused
+
   //FIRE BASE STORAGE
 //  FirebaseStorage storage = FirebaseStorage.getInstance();
 //  private StorageReference mStorage;
+
+  BroadcastReceiver phonestatereceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      Bundle extras = intent.getExtras();
+      if (extras != null) {
+        String state = extras.getString(TelephonyManager.EXTRA_STATE);
+        if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
+          //pause here
+          if (stateOfMRecorder==1){
+            mRecorder.pause();
+            stateOfMRecorder=2;
+          }
+        }
+        else if (state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
+          //pause here
+          if (stateOfMRecorder==1){
+            mRecorder.pause();
+            stateOfMRecorder=2;
+            }
+        }
+        else if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
+          //play here
+          if (stateOfMRecorder==2){
+            mRecorder.resume();
+            }
+        }
+      }
+    }
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
     GeneratedPluginRegistrant.registerWith(this);
+
+
 
     //CHANNEL CODE STARTS HERE
     new MethodChannel(getFlutterView(),CHANNEL).setMethodCallHandler(
@@ -70,9 +108,78 @@ public class MainActivity extends FlutterActivity {
                   if(redButtonState%2==0){
                     stopRecording();
                     result.success(mFileName);
+
+                    unregisterReceiver(phonestatereceiver);
+
+
+//                    //When CALL IS ACTIVE PAUSE AND RESUME
+//                    PhoneStateListener phoneStateListener = new PhoneStateListener() {
+//                      @Override
+//                      public void onCallStateChanged(int state, String incomingNumber) {
+//                        if (state == TelephonyManager.CALL_STATE_RINGING) {
+//                          //Incoming call:
+//                        } else if(state == TelephonyManager.CALL_STATE_IDLE) {
+//                          //Not in call:
+//                          if (stateOfMRecorder==2){
+//                            mRecorder.resume();
+//                          }
+//                        } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
+//                          //A call is dialing, active or on hold
+//                          if (stateOfMRecorder==1){
+//                            mRecorder.pause();
+//                            stateOfMRecorder=2;
+//                          }
+//                        }
+//                        super.onCallStateChanged(state, incomingNumber);
+//                      }
+//                    };
+//                    TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+//                    if(mgr != null) {
+//                      mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+//                    }
+//                    //code ends
+
+
+
+
+
                   }else{
                     startRecording();
                     result.success("Recording On ");
+
+
+                    IntentFilter filter = new IntentFilter();
+                    filter.addAction(android.telephony.TelephonyManager.ACTION_PHONE_STATE_CHANGED);
+                    registerReceiver(phonestatereceiver,filter);
+
+//                    //When CALL IS ACTIVE PAUSE AND RESUME
+//                    PhoneStateListener phoneStateListener = new PhoneStateListener() {
+//                      @Override
+//                      public void onCallStateChanged(int state, String incomingNumber) {
+//                        if (state == TelephonyManager.CALL_STATE_RINGING) {
+//                          //Incoming call:
+//                        } else if(state == TelephonyManager.CALL_STATE_IDLE) {
+//                          //Not in call:
+//                          if (stateOfMRecorder==2){
+//                            mRecorder.resume();
+//                          }
+//                        } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
+//                          //A call is dialing, active or on hold
+//                          if (stateOfMRecorder==1){
+//                            mRecorder.pause();
+//                            stateOfMRecorder=2;
+//                          }
+//                        }
+//                        super.onCallStateChanged(state, incomingNumber);
+//                      }
+//                    };
+//                    TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+//                    if(mgr != null) {
+//                      mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+//                    }
+//                    //code ends
+
+
                   }
 
                 } else  {
@@ -85,6 +192,8 @@ public class MainActivity extends FlutterActivity {
     //CHANNEL CODE ENDS HERE
 
   }
+
+
 
   //RECORDING METHODS
   private void startRecording() {
@@ -116,6 +225,7 @@ public class MainActivity extends FlutterActivity {
     }
 
     mRecorder.start();
+    stateOfMRecorder=1;
 
   }
 
@@ -123,7 +233,7 @@ public class MainActivity extends FlutterActivity {
     mRecorder.stop();
     mRecorder.release();
     mRecorder = null;
-
+    stateOfMRecorder=0;
   }
 
 
