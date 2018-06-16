@@ -10,8 +10,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:dex_for_doctor/popGuides.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -31,6 +31,9 @@ int walletCurr = 0;
 int walletAvail = 0;
 
 int runOnceOnStartUp = 0;
+
+SharedPreferences localStorage;
+
 
 void main() => runApp(new MyApp());
 
@@ -67,12 +70,34 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   BuildContext sssss;
 
+  int loginStateStored;
+
+
+  @override
+  void initState() {
+    super.initState();
+    print("INIT STATE RUN");
+    googleSilentCheckerFunction();
+
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
     //CHECK CURRENT USER.. THIS STAYS NULL UNTIL SILENT LOGIN CHECKER ?
     print("Current User: " + googleSignIn.currentUser.toString());
 
-    if (googleSignIn.currentUser == null) {
+    var signInStateValue;
+    signInStateValue=googleSignIn.currentUser;
+
+    if(loginStateStored==1){
+      print("loginStateStored: $loginStateStored");
+      signInStateValue = loginStateStored;
+      print("signInStateValue: $signInStateValue");
+    }
+
+    if (signInStateValue == null ) {
       return new Scaffold(
         body: new Container(
           child: new Center(
@@ -483,12 +508,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //    print("file location: ")
   }
 
-  @override
-  void initState() {
-    super.initState();
-    print("INIT STATE RUN");
-    googleSilentCheckerFunction();
-  }
+
 
   //LOGIN BUTTON IS INIT
   Future<Null> ensureLoggedIn() async {
@@ -507,6 +527,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         idToken: credentials.idToken,
         accessToken: credentials.accessToken,
       );
+      await localStorage.setInt("loginInState", 1);
+      print("Wrote to shared pref local storage: login State: => 1");
     }
     print("ENSURE LOGGED IN SUCCESS: ");
     _emailID = googleSignIn.currentUser.email;
@@ -517,6 +539,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Future googleSilentCheckerFunction() async {
     print("googleSilentCheckerFunction RUN");
     GoogleSignInAccount xUser = googleSignIn.currentUser;
+
+    localStorage= await SharedPreferences.getInstance();
+    //Get STATE OF LOGIN
+    loginStateStored=localStorage.getInt("loginInState");
+
     if (xUser == null) {
       xUser = await googleSignIn.signInSilently();
       if (xUser == null) {
