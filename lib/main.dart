@@ -11,6 +11,9 @@ import 'dart:io';
 
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:simple_permissions/simple_permissions.dart';
+import 'package:audioplayer/audioplayer.dart';
+
 
 
 final auth = FirebaseAuth.instance;
@@ -78,9 +81,44 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.initState();
     print("INIT STATE RUN");
     googleSilentCheckerFunction();
+    initPlatformState();
+    getPermissionAndroid();
+  }
 
+  String _platformVersion = 'Unknown';
+  Permission permission;
+  // Platform messages are asynchronous, so we initialize in an async method.
+  initPlatformState() async {
+    String platformVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      platformVersion = await SimplePermissions.platformVersion;
+    } on PlatformException {
+      platformVersion = 'Failed to get platform version.';
+    }
 
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
 
+    setState(() {
+      _platformVersion = platformVersion;
+    });
+  }
+  getPermissionAndroid() async{
+    await SimplePermissions.checkPermission(Permission.RecordAudio).then((perm){
+      print("permission State: $perm");
+      if(perm==false){
+        SimplePermissions.requestPermission(Permission.RecordAudio);
+      }
+    });
+    await SimplePermissions.checkPermission(Permission.WriteExternalStorage).then((perm){
+      print("permission State: $perm");
+      if(perm==false){
+        SimplePermissions.requestPermission(Permission.WriteExternalStorage);
+      }
+    });
   }
 
   @override
@@ -442,11 +480,11 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: new ListBody(
               children: <Widget>[
                 new Text('Delete previous recording?'),
-                new Text('Duration:'),
-                new Text(
-                  durationForDeletePrevious.toString() + " Seconds",
-                  style: TextStyle(color: Colors.red, fontSize: 25.0),
-                ),
+//                new Text('Duration:'),
+//                new Text(
+//                  durationForDeletePrevious.toString() + " Seconds",
+//                  style: TextStyle(color: Colors.red, fontSize: 25.0),
+//                ),
               ],
             ),
           ),
@@ -928,6 +966,9 @@ class EMRPage extends StatefulWidget {
 }
 
 class _EMRPageState extends State<EMRPage> {
+
+  AudioPlayer audioPlayer = new AudioPlayer();
+  
   @override
   void initState() {
     super.initState();
@@ -947,6 +988,7 @@ class _EMRPageState extends State<EMRPage> {
         leading: new IconButton(
             icon: new Icon(Icons.close),
             onPressed: () {
+              if(audioFileWidgetState==1)stopSound();
               Navigator.pop(context);
             }),
         title: new Text(patientCode.split("-")[0]),
@@ -973,6 +1015,56 @@ class _EMRPageState extends State<EMRPage> {
     );
   }
 
+
+
+
+
+
+
+
+  int audioFileWidgetState=0;
+  Future<Null> playSound(audioUrl) async {
+    await audioPlayer.play(audioUrl);
+  }
+  Future<Null> stopSound() async {
+    await audioPlayer.stop();
+  }
+  Widget audioFileWidget(snapshot){
+
+    if(audioFileWidgetState==0){
+      return new FlatButton.icon(
+        icon: new Icon(Icons.play_circle_outline,size: 40.0,color: Colors.blueGrey,),
+        label: new Text("Play"),
+        onPressed:(){
+          print("Audio File plaiyng: "+snapshot.value["con"]);
+          playSound(snapshot.value["con"]);
+          audioFileWidgetState=1;
+          setState(() {
+
+          });
+        },);
+    }
+    else{
+      return new FlatButton.icon(
+        icon: new Icon(Icons.stop,size: 40.0,color:Colors.blueGrey,),
+        label: new Text("Stop"),
+        onPressed:(){
+          stopSound();
+          audioFileWidgetState=0;
+          setState(() {
+
+          });
+        },);
+    }
+  }
+
+
+
+
+
+
+
+
   //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
   Widget textRenderForEMR(snapshot) {
     if (snapshot.value["head"].toString() == "DATE") {
@@ -985,7 +1077,23 @@ class _EMRPageState extends State<EMRPage> {
           ),
         ),
       );
-    } else if (snapshot.value["con"].toString() != "") {
+    } else if(snapshot.value["head"].toString() == "AUDI"){
+      return new Padding(
+        padding: const EdgeInsets.only(top: 10.0,bottom: 20.0,left: 10.0),
+        child: new Column(
+          children: <Widget>[
+            new Row(children: <Widget>[
+              new Text("AUDIO FILE",style: new TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.teal,
+            fontSize: 14.0),),
+            ],),
+            audioFileWidget(snapshot),
+          ],
+        ),
+      );
+    }
+    else if (snapshot.value["con"].toString() != "") {
       return new Container(
         child: new Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),

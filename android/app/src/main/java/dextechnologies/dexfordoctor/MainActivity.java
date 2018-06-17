@@ -2,6 +2,8 @@ package dextechnologies.dexfordoctor;
 
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -47,6 +49,8 @@ public class MainActivity extends FlutterActivity {
   String mFileName = null;
 
   int stateOfMRecorder=0; //0 stop, 1Record, 2Paused
+
+  NotificationManager notificationManager;
 
   //FIRE BASE STORAGE
 //  FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -144,6 +148,21 @@ public class MainActivity extends FlutterActivity {
 
 
                   }else{
+
+                    //NOTIFICATION
+
+//                    NotificationCompat
+
+//                    Notification noti = new Notification.Builder(MainActivity.this)
+//                            .setContentTitle("Notification title")
+//                            .setContentText("Notification content")
+//                            .setOngoing(true)
+//                            .build();
+//                    if(notificationManager==null){
+//                      notificationManager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//                    }
+//                    notificationManager.notify(1,noti);
+
                     startRecording();
                     result.success("Recording On ");
 
@@ -151,6 +170,9 @@ public class MainActivity extends FlutterActivity {
                     IntentFilter filter = new IntentFilter();
                     filter.addAction(android.telephony.TelephonyManager.ACTION_PHONE_STATE_CHANGED);
                     registerReceiver(phonestatereceiver,filter);
+
+
+
 
 //                    //When CALL IS ACTIVE PAUSE AND RESUME
 //                    PhoneStateListener phoneStateListener = new PhoneStateListener() {
