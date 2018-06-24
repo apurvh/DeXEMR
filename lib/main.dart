@@ -8,7 +8,7 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 import 'dart:io';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_permissions/simple_permissions.dart';
@@ -76,6 +76,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   int loginStateStored;
 
+  final FirebaseMessaging _firebaseMessaging = new FirebaseMessaging();
+  String tokenId;
 
   @override
   void initState() {
@@ -84,6 +86,43 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     googleSilentCheckerFunction();
     initPlatformState();
     getPermissionAndroid();
+
+    messagingToken();
+
+
+  }
+
+  //RETRIEVE AND SAVE TOKEN FOR NOTIFICATION
+  Future messagingToken() async{
+    _firebaseMessaging.configure(
+        onMessage: (Map<String, dynamic> message) {
+          //THIS IS WHAT HAPPENS WHEN NOTIFICATION ARRIVES
+          print("NOTIFICATION FROM FCM JUST ARRIVED");
+          print(message);
+
+        },
+        onResume: (Map<String, dynamic> message) {
+           print(message);
+        },
+        onLaunch: (Map<String, dynamic> message) {
+          print(message);
+    });
+
+    await _firebaseMessaging.getToken().then((token) {
+      tokenId = token;
+    });
+
+    print("FCM TOCKEN========>>>>>>>>>: "+tokenId+googleSignIn.currentUser.toString());
+
+    //SAVE TOKEN ON CLOUD
+//    if(!(googleSignIn.currentUser==null)){
+//      FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).update({
+//        "token":tokenId
+//      });
+//      print("FCM TOCKEN========>>>>>>>>>: pppppppppppppppppppppppppppppppppppppppppppppp");
+//
+//    }
+
   }
 
   String _platformVersion = 'Unknown';
@@ -126,6 +165,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     //CHECK CURRENT USER.. THIS STAYS NULL UNTIL SILENT LOGIN CHECKER ?
     print("Current User: " + googleSignIn.currentUser.toString());
+
 
     var signInStateValue;
     signInStateValue=googleSignIn.currentUser;
@@ -622,6 +662,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         setState(() {});
         print("googleSilentCheckerFunction RUN==>1");
         _emailID = googleSignIn.currentUser.email;
+
+        //UPDATE TOKEN TO CLOUD
+        FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).update({
+          "token":tokenId
+        });
+        print("FCM TOCKEN========>>>>>>>>>: uploaded successfully");
       }
     }
   }
