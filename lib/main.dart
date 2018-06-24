@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:audioplayer/audioplayer.dart';
+import 'package:share/share.dart';
 
 
 
@@ -296,26 +297,38 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             new Divider(),
             new Text(
               "Demographics",
-              style: new TextStyle(color: Colors.grey[900], fontSize: 16.0),
+              style: new TextStyle(color: Colors.teal[600], fontSize: 16.0),
             ),
             new Text(
               "Name, Age, Gender, Phone\n",
               style: new TextStyle(color: Colors.grey[900], fontSize: 16.0),
             ),
             new Text(
+              "History",
+              style: new TextStyle(color: Colors.teal[600], fontSize: 16.0),
+            ),
+            new Text(
               "Chief Complaints, Present History, Past History, Drug History, Allergies, Addictions, Menstrual History, Obsteric History\n",
               style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
             ),
             new Text(
-              "General Examination, Local Examination, Opinions\n",
+              "Examinations",
+              style: new TextStyle(color: Colors.teal[600], fontSize: 16.0),
+            ),
+            new Text(
+              "General Examination, Local Examination\n",
               style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
             ),
             new Text(
-              "Investigations\n",
-              style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
+              "Diagnosis\n",
+              style: new TextStyle(color: Colors.teal[600], fontSize: 16.0),
             ),
             new Text(
-              "Treatment Plan, Prescriptions & Follow up\n",
+              "Management\n",
+              style: new TextStyle(color: Colors.teal[600], fontSize: 15.0),
+            ),
+            new Text(
+              "Prescriptions & Follow up\n",
               style: new TextStyle(color: Colors.grey[900], fontSize: 15.0),
             ),
           ],
@@ -439,12 +452,26 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   }
 
   Widget deletePrevious() {
-    if (stateBtnDeletePrev < 2) {
+    if (stateBtnDeletePrev == 0) {
       return Container(
         height: 20.0,
       );
     } else if (stateBtnDeletePrev.isOdd) {
-      return Container();
+      return Container(
+//        child: new FlatButton.icon(
+//          onPressed: (){
+//
+//            print("recordPauseValue==>>>: $_recordPauseSwitch");
+//
+//
+//          },
+//          icon: new Icon(Icons.pause,size: 40.0,),
+//          label:new Text("Pause"),
+//          color: Colors.grey[100],
+//          textColor: Colors.red,
+//
+//        ),
+      );
     } else {
       return new FlatButton(
         child: new Text(
@@ -994,7 +1021,12 @@ class _EMRPageState extends State<EMRPage> {
         title: new Text(patientCode.split("-")[0]),
         automaticallyImplyLeading: false,
         actions: <Widget>[
-          //add ability to collapse the list ie remove empty content
+
+          new IconButton(icon: new Icon(Icons.share), onPressed: (){
+
+            shareButton();
+
+          })
         ],
       ),
       body: new Column(
@@ -1016,7 +1048,36 @@ class _EMRPageState extends State<EMRPage> {
   }
 
 
+  //share button email
+  Future shareButton() async{
 
+    List shareData;
+    String shareDataText="Medical Records of $patientCode : \n\n";
+    await FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("EMR")
+        .child(_emailID.replaceAll(".", " "))
+        .child(patientCode).once().then((DataSnapshot snap){
+          shareData=snap.value;
+    });
+    for (var i=0; i<shareData.length-1;i++){
+
+      print("==============>${shareData[i]["head"]}");
+      String shareDataTextloopHead;
+      String shareDataTextloopCon;
+
+        shareDataTextloopHead=shareData[i]["head"].toString();
+        shareDataTextloopCon = shareData[i]["con"].toString();
+
+      //Remove Blanks
+      if(shareDataTextloopCon==""){}else{
+        shareDataText = shareDataText + shareDataTextloopHead + ": " + shareDataTextloopCon + "\n\n";
+      }
+    }
+    print("Snap value: ==>> $shareDataText");
+    Share.share(shareDataText);
+  }
 
 
 
