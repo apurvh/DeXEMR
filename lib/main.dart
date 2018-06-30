@@ -15,7 +15,7 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:share/share.dart';
 
-
+//this old version
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -37,7 +37,6 @@ int walletAvail = 0;
 int runOnceOnStartUp = 0;
 
 SharedPreferences localStorage;
-
 
 void main() => runApp(new MyApp());
 
@@ -88,31 +87,27 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     getPermissionAndroid();
 
     messagingToken();
-
-
   }
 
   //RETRIEVE AND SAVE TOKEN FOR NOTIFICATION
-  Future messagingToken() async{
-    _firebaseMessaging.configure(
-        onMessage: (Map<String, dynamic> message) {
-          //THIS IS WHAT HAPPENS WHEN NOTIFICATION ARRIVES
-          print("NOTIFICATION FROM FCM JUST ARRIVED");
-          print(message);
-
-        },
-        onResume: (Map<String, dynamic> message) {
-           print(message);
-        },
-        onLaunch: (Map<String, dynamic> message) {
-          print(message);
+  Future messagingToken() async {
+    _firebaseMessaging.configure(onMessage: (Map<String, dynamic> message) {
+      //THIS IS WHAT HAPPENS WHEN NOTIFICATION ARRIVES
+      print("NOTIFICATION FROM FCM JUST ARRIVED");
+      print(message);
+    }, onResume: (Map<String, dynamic> message) {
+      print(message);
+    }, onLaunch: (Map<String, dynamic> message) {
+      print(message);
     });
 
     await _firebaseMessaging.getToken().then((token) {
       tokenId = token;
     });
 
-    print("FCM TOCKEN========>>>>>>>>>: "+tokenId+googleSignIn.currentUser.toString());
+    print("FCM TOCKEN========>>>>>>>>>: " +
+        tokenId +
+        googleSignIn.currentUser.toString());
 
     //SAVE TOKEN ON CLOUD
 //    if(!(googleSignIn.currentUser==null)){
@@ -122,7 +117,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //      print("FCM TOCKEN========>>>>>>>>>: pppppppppppppppppppppppppppppppppppppppppppppp");
 //
 //    }
-
   }
 
   String _platformVersion = 'Unknown';
@@ -146,16 +140,21 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       _platformVersion = platformVersion;
     });
   }
-  getPermissionAndroid() async{
-    await SimplePermissions.checkPermission(Permission.RecordAudio).then((perm){
+
+  getPermissionAndroid() async {
+    await SimplePermissions
+        .checkPermission(Permission.RecordAudio)
+        .then((perm) {
       print("permission State: $perm");
-      if(perm==false){
+      if (perm == false) {
         SimplePermissions.requestPermission(Permission.RecordAudio);
       }
     });
-    await SimplePermissions.checkPermission(Permission.WriteExternalStorage).then((perm){
+    await SimplePermissions
+        .checkPermission(Permission.WriteExternalStorage)
+        .then((perm) {
       print("permission State: $perm");
-      if(perm==false){
+      if (perm == false) {
         SimplePermissions.requestPermission(Permission.WriteExternalStorage);
       }
     });
@@ -166,17 +165,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     //CHECK CURRENT USER.. THIS STAYS NULL UNTIL SILENT LOGIN CHECKER ?
     print("Current User: " + googleSignIn.currentUser.toString());
 
-
     var signInStateValue;
-    signInStateValue=googleSignIn.currentUser;
+    signInStateValue = googleSignIn.currentUser;
 
-    if(loginStateStored==1){
+    if (loginStateStored == 1) {
       print("loginStateStored: $loginStateStored");
       signInStateValue = loginStateStored;
       print("signInStateValue: $signInStateValue");
     }
 
-    if (signInStateValue == null ) {
+    if (signInStateValue == null) {
       return new Scaffold(
         body: new Container(
           child: new Center(
@@ -308,14 +306,20 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   new Row(
                     children: <Widget>[
                       new FlatButton.icon(
-                          label:new Text("Reference",style: new TextStyle(fontStyle: FontStyle.italic,color: Colors.blueGrey,),),
-                          icon: new Icon(
-                            Icons.info_outline,
+                        label: new Text(
+                          "Reference",
+                          style: new TextStyle(
+                            fontStyle: FontStyle.italic,
                             color: Colors.blueGrey,
                           ),
-                          onPressed: () {
-                            showDialogFormat();
-                          },
+                        ),
+                        icon: new Icon(
+                          Icons.info_outline,
+                          color: Colors.blueGrey,
+                        ),
+                        onPressed: () {
+                          showDialogFormat();
+                        },
                       )
                     ],
                   )
@@ -326,13 +330,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     }
   }
 
-
   //SHOWS ALL RECORD DOCUMENTATION FORMAT
   void showDialogFormat() {
     showDialog(
         context: context,
         child: new SimpleDialog(
-          title: new Text("DeX listens for:",style: new TextStyle(color: Colors.teal),),
+          title: new Text(
+            "DeX listens for:",
+            style: new TextStyle(color: Colors.teal),
+          ),
           children: <Widget>[
             new Divider(),
             new Text(
@@ -377,8 +383,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ));
   }
 
-
-
   //NOT FUTURE BUT STREAM
   Future loadInitialValues() async {
     if (runOnceOnStartUp == 0) {
@@ -398,7 +402,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           runOnceOnStartUp = 1;
         });
       });
-
     }
   }
 
@@ -511,7 +514,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //          textColor: Colors.red,
 //
 //        ),
-      );
+          );
     } else {
       return new FlatButton(
         child: new Text(
@@ -613,8 +616,6 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 //    print("file location: ")
   }
 
-
-
   //LOGIN BUTTON IS INIT
   Future<Null> ensureLoggedIn() async {
     print("RUNNING ESURE LOOGED IN");
@@ -645,9 +646,9 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     print("googleSilentCheckerFunction RUN");
     GoogleSignInAccount xUser = googleSignIn.currentUser;
 
-    localStorage= await SharedPreferences.getInstance();
+    localStorage = await SharedPreferences.getInstance();
     //Get STATE OF LOGIN
-    loginStateStored=localStorage.getInt("loginInState");
+    loginStateStored = localStorage.getInt("loginInState");
 
     if (xUser == null) {
       xUser = await googleSignIn.signInSilently();
@@ -664,9 +665,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         _emailID = googleSignIn.currentUser.email;
 
         //UPDATE TOKEN TO CLOUD
-        FirebaseDatabase.instance.reference().child("DeXAutoCollect").child("wallet").child(_emailID.replaceAll(".", " ")).update({
-          "token":tokenId
-        });
+        FirebaseDatabase.instance
+            .reference()
+            .child("DeXAutoCollect")
+            .child("wallet")
+            .child(_emailID.replaceAll(".", " "))
+            .update({"token": tokenId});
         print("FCM TOCKEN========>>>>>>>>>: uploaded successfully");
       }
     }
@@ -709,12 +713,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     stillUploadingLastOne = 1;
 
     //GET KEY
-    String uploadAudioFileKey=FirebaseDatabase.instance
+    String uploadAudioFileKey = FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("list")
         .child(_emailID.replaceAll(".", " "))
-        .push().key;
+        .push()
+        .key;
 
 //    print(uploadAudioFileKey);
     await FirebaseDatabase.instance
@@ -1039,9 +1044,8 @@ class EMRPage extends StatefulWidget {
 }
 
 class _EMRPageState extends State<EMRPage> {
-
   AudioPlayer audioPlayer = new AudioPlayer();
-  
+
   @override
   void initState() {
     super.initState();
@@ -1061,18 +1065,17 @@ class _EMRPageState extends State<EMRPage> {
         leading: new IconButton(
             icon: new Icon(Icons.close),
             onPressed: () {
-              if(audioFileWidgetState==1)stopSound();
+              if (audioFileWidgetState == 1) stopSound();
               Navigator.pop(context);
             }),
         title: new Text(patientCode.split("-")[0]),
         automaticallyImplyLeading: false,
         actions: <Widget>[
-
-          new IconButton(icon: new Icon(Icons.share), onPressed: (){
-
-            shareButton();
-
-          })
+          new IconButton(
+              icon: new Icon(Icons.share),
+              onPressed: () {
+                shareButton();
+              })
         ],
       ),
       body: new Column(
@@ -1093,84 +1096,83 @@ class _EMRPageState extends State<EMRPage> {
     );
   }
 
-
   //share button email
-  Future shareButton() async{
-
+  Future shareButton() async {
     List shareData;
-    String shareDataText="Medical Records of $patientCode : \n\n";
+    String shareDataText = "Medical Records of $patientCode : \n\n";
     await FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("EMR")
         .child(_emailID.replaceAll(".", " "))
-        .child(patientCode).once().then((DataSnapshot snap){
-          shareData=snap.value;
+        .child(patientCode)
+        .once()
+        .then((DataSnapshot snap) {
+      shareData = snap.value;
     });
-    for (var i=0; i<shareData.length-1;i++){
-
+    for (var i = 0; i < shareData.length - 1; i++) {
       print("==============>${shareData[i]["head"]}");
       String shareDataTextloopHead;
       String shareDataTextloopCon;
 
-        shareDataTextloopHead=shareData[i]["head"].toString();
-        shareDataTextloopCon = shareData[i]["con"].toString();
+      shareDataTextloopHead = shareData[i]["head"].toString();
+      shareDataTextloopCon = shareData[i]["con"].toString();
 
       //Remove Blanks
-      if(shareDataTextloopCon==""){}else{
-        shareDataText = shareDataText + shareDataTextloopHead + ": " + shareDataTextloopCon + "\n\n";
+      if (shareDataTextloopCon == "") {
+      } else {
+        shareDataText = shareDataText +
+            shareDataTextloopHead +
+            ": " +
+            shareDataTextloopCon +
+            "\n\n";
       }
     }
     print("Snap value: ==>> $shareDataText");
     Share.share(shareDataText);
   }
 
-
-
-
-
-  int audioFileWidgetState=0;
+  int audioFileWidgetState = 0;
   Future<Null> playSound(audioUrl) async {
     await audioPlayer.play(audioUrl);
   }
+
   Future<Null> stopSound() async {
     await audioPlayer.stop();
   }
-  Widget audioFileWidget(snapshot){
 
-    if(audioFileWidgetState==0){
+  Widget audioFileWidget(snapshot) {
+    if (audioFileWidgetState == 0) {
       return new FlatButton.icon(
-        icon: new Icon(Icons.play_circle_outline,size: 40.0,color: Colors.blueGrey,),
+        icon: new Icon(
+          Icons.play_circle_outline,
+          size: 40.0,
+          color: Colors.blueGrey,
+        ),
         label: new Text("Play"),
-        onPressed:(){
-          print("Audio File plaiyng: "+snapshot.value["con"]);
+        onPressed: () {
+          print("Audio File plaiyng: " + snapshot.value["con"]);
           playSound(snapshot.value["con"]);
-          audioFileWidgetState=1;
-          setState(() {
-
-          });
-        },);
-    }
-    else{
+          audioFileWidgetState = 1;
+          setState(() {});
+        },
+      );
+    } else {
       return new FlatButton.icon(
-        icon: new Icon(Icons.stop,size: 40.0,color:Colors.blueGrey,),
+        icon: new Icon(
+          Icons.stop,
+          size: 40.0,
+          color: Colors.blueGrey,
+        ),
         label: new Text("Stop"),
-        onPressed:(){
+        onPressed: () {
           stopSound();
-          audioFileWidgetState=0;
-          setState(() {
-
-          });
-        },);
+          audioFileWidgetState = 0;
+          setState(() {});
+        },
+      );
     }
   }
-
-
-
-
-
-
-
 
   //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
   Widget textRenderForEMR(snapshot) {
@@ -1184,23 +1186,27 @@ class _EMRPageState extends State<EMRPage> {
           ),
         ),
       );
-    } else if(snapshot.value["head"].toString() == "AUDI"){
+    } else if (snapshot.value["head"].toString() == "AUDI") {
       return new Padding(
-        padding: const EdgeInsets.only(top: 10.0,bottom: 20.0,left: 10.0),
+        padding: const EdgeInsets.only(top: 10.0, bottom: 20.0, left: 10.0),
         child: new Column(
           children: <Widget>[
-            new Row(children: <Widget>[
-              new Text("AUDIO FILE",style: new TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.teal,
-            fontSize: 14.0),),
-            ],),
+            new Row(
+              children: <Widget>[
+                new Text(
+                  "AUDIO FILE",
+                  style: new TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                      fontSize: 14.0),
+                ),
+              ],
+            ),
             audioFileWidget(snapshot),
           ],
         ),
       );
-    }
-    else if (snapshot.value["con"].toString() != "") {
+    } else if (snapshot.value["con"].toString() != "") {
       return new Container(
         child: new Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
