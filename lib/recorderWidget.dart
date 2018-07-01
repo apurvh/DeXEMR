@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:dex_for_doctor/mainScreen.dart';
 
 class RecorderWidget extends StatefulWidget {
+//  RecorderWidget({Key key}) : super(key: key);
+
   @override
   _RecorderWidgetState createState() => _RecorderWidgetState();
 }
@@ -8,12 +12,22 @@ class RecorderWidget extends StatefulWidget {
 class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   Widget build(BuildContext context) {
-    if (true) {
+    if (false) {
       return new Container();
     } else {
       return new Container(
+        margin: const EdgeInsets.only(bottom: 4.0),
         padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 25.0),
-        color: Colors.blueGrey[50],
+        decoration: new BoxDecoration(
+          boxShadow: [
+            new BoxShadow(
+              spreadRadius: 1.0,
+              blurRadius: 2.0,
+              color: Colors.grey,
+            )
+          ],
+          color: Colors.blueGrey[50],
+        ),
         child: new Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -87,17 +101,22 @@ class _RecorderWidgetState extends State<RecorderWidget> {
             ),
             new Column(
               children: <Widget>[
-                new RawMaterialButton(
-                  onPressed: () {},
-                  child: new Icon(
-                    Icons.done,
-                    size: 40.0,
-                    color: Colors.teal[600],
-                  ),
-                  shape: new CircleBorder(),
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  padding: const EdgeInsets.all(15.0),
+                new ScopedModelDescendant<CounterModel>(
+                  builder: (context, child, model) => new RawMaterialButton(
+                        onPressed: () {
+                          model.increment();
+                          print("====>>>>  ${model.counter}");
+                        },
+                        child: new Icon(
+                          Icons.done,
+                          size: 40.0,
+                          color: Colors.teal[600],
+                        ),
+                        shape: new CircleBorder(),
+                        elevation: 2.0,
+                        fillColor: Colors.white,
+                        padding: const EdgeInsets.all(15.0),
+                      ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),

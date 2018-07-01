@@ -4,6 +4,8 @@ import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'package:dex_for_doctor/emrWidget.dart';
+
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
 
@@ -46,7 +48,9 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               return _recordsListTile(snapshot);
             },
             sort: (a, b) => b.key.compareTo(a.key),
-            defaultChild: new Center(child: new Text("loading...")),
+            defaultChild: new Center(
+              child: new Text("loading..."),
+            ),
           ),
         ),
       ],
@@ -89,23 +93,26 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               style: new TextStyle(color: Colors.grey[800]),
             ),
             onTap: () {
-//              //GET KEY AND PASS IT
-//              patientKey = snapshot.key;
-//              print("patientKey: " + patientKey);
-//              referenceToRecords.child(patientKey).update({"seen": 1});
-//
-//              //SET PATIENT CODE WHICH IS USED TO LAOD PATIENT EMR
-//              patientCode = snapshot.value["newName"] +
-//                  "-" +
-//                  snapshot.value["phone"].toString();
-//              print("Redirected to EMR and patientCode: " + patientCode);
-//
-//              //MATERIAL ROUTE TO EMR
-//              Navigator
-//                  .of(context)
-//                  .push(new MaterialPageRoute(builder: (context) {
-//                return new EMRPage();
-//              }));
+              //GET KEY AND PASS IT
+              String patientKey = snapshot.key;
+              print("patientKey: " + patientKey);
+              referenceToRecords.child(patientKey).update({"seen": 1});
+
+              //SET PATIENT CODE WHICH IS USED TO LOAD PATIENT EMR
+              String patientCode = snapshot.value["newName"] +
+                  "-" +
+                  snapshot.value["phone"].toString();
+              print("Redirected to EMR and patientCode: " + patientCode);
+
+              //MATERIAL ROUTE TO EMR
+              Navigator
+                  .of(context)
+                  .push(new MaterialPageRoute(builder: (context) {
+                return new EMRPage(
+                  email: widget.email,
+                  patientCode: patientCode,
+                );
+              }));
             },
           ),
           new Divider(),
