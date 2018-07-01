@@ -56,6 +56,7 @@ public class MainActivity extends FlutterActivity {
 //  FirebaseStorage storage = FirebaseStorage.getInstance();
 //  private StorageReference mStorage;
 
+  //PAUSE WHEN IN CALL
   BroadcastReceiver phonestatereceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -106,6 +107,8 @@ public class MainActivity extends FlutterActivity {
 //                  mFileName += "/"+time+".3gp";
 
                   //FLUTTER HOT RELOAD AND RESTART DOES NOT WORK FOR MAIN ACTIVITY CODE
+
+
                   //WHEN TRUE IS RECEIVED FROM FLUTTER CHANNEL THEN RECORDING IS STOPPED
                   //VICE VERSA FOR FALSE
 
@@ -115,53 +118,8 @@ public class MainActivity extends FlutterActivity {
 
                     unregisterReceiver(phonestatereceiver);
 
-
-//                    //When CALL IS ACTIVE PAUSE AND RESUME
-//                    PhoneStateListener phoneStateListener = new PhoneStateListener() {
-//                      @Override
-//                      public void onCallStateChanged(int state, String incomingNumber) {
-//                        if (state == TelephonyManager.CALL_STATE_RINGING) {
-//                          //Incoming call:
-//                        } else if(state == TelephonyManager.CALL_STATE_IDLE) {
-//                          //Not in call:
-//                          if (stateOfMRecorder==2){
-//                            mRecorder.resume();
-//                          }
-//                        } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
-//                          //A call is dialing, active or on hold
-//                          if (stateOfMRecorder==1){
-//                            mRecorder.pause();
-//                            stateOfMRecorder=2;
-//                          }
-//                        }
-//                        super.onCallStateChanged(state, incomingNumber);
-//                      }
-//                    };
-//                    TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-//                    if(mgr != null) {
-//                      mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-//                    }
-//                    //code ends
-
-
-
-
-
                   }else{
 
-                    //NOTIFICATION
-
-//                    NotificationCompat
-
-//                    Notification noti = new Notification.Builder(MainActivity.this)
-//                            .setContentTitle("Notification title")
-//                            .setContentText("Notification content")
-//                            .setOngoing(true)
-//                            .build();
-//                    if(notificationManager==null){
-//                      notificationManager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//                    }
-//                    notificationManager.notify(1,noti);
 
                     startRecording();
                     result.success("Recording On ");
@@ -171,35 +129,6 @@ public class MainActivity extends FlutterActivity {
                     filter.addAction(android.telephony.TelephonyManager.ACTION_PHONE_STATE_CHANGED);
                     registerReceiver(phonestatereceiver,filter);
 
-
-
-
-//                    //When CALL IS ACTIVE PAUSE AND RESUME
-//                    PhoneStateListener phoneStateListener = new PhoneStateListener() {
-//                      @Override
-//                      public void onCallStateChanged(int state, String incomingNumber) {
-//                        if (state == TelephonyManager.CALL_STATE_RINGING) {
-//                          //Incoming call:
-//                        } else if(state == TelephonyManager.CALL_STATE_IDLE) {
-//                          //Not in call:
-//                          if (stateOfMRecorder==2){
-//                            mRecorder.resume();
-//                          }
-//                        } else if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
-//                          //A call is dialing, active or on hold
-//                          if (stateOfMRecorder==1){
-//                            mRecorder.pause();
-//                            stateOfMRecorder=2;
-//                          }
-//                        }
-//                        super.onCallStateChanged(state, incomingNumber);
-//                      }
-//                    };
-//                    TelephonyManager mgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-//                    if(mgr != null) {
-//                      mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-//                    }
-//                    //code ends
 
 
                   }

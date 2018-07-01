@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:dex_for_doctor/mainScreen.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'dart:async';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class RecorderWidget extends StatefulWidget {
-//  RecorderWidget({Key key}) : super(key: key);
+  const RecorderWidget({Key key, this.email});
+
+  final String email;
 
   @override
   _RecorderWidgetState createState() => _RecorderWidgetState();
@@ -104,7 +113,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                 new ScopedModelDescendant<CounterModel>(
                   builder: (context, child, model) => new RawMaterialButton(
                         onPressed: () {
-                          model.increment();
+                          model.decrement();
                           print("====>>>>  ${model.counter}");
                         },
                         child: new Icon(
@@ -134,5 +143,70 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         ),
       );
     }
+  }
+
+  //PLATFORM
+  static const platform = const MethodChannel('dex.channels/dfRedButtonState');
+
+  //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
+  Future redButtonStateChannelFunction() async {
+    String result = await platform.invokeMethod('stateReply', {
+//      'redButtonState': _recordPauseSwitch,
+      'time': new DateTime.now().millisecondsSinceEpoch.toString()
+    });
+    print("RESULT IS: " + result);
+
+//    stillUploadingLastOne = 1;
+
+    //GET KEY
+    String uploadAudioFileKey = FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("list")
+        .child(widget.email.replaceAll(".", " "))
+        .push()
+        .key;
+
+//    print(uploadAudioFileKey);
+    await FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("list")
+        .child(widget.email.replaceAll(".", " "))
+        .child(uploadAudioFileKey)
+        .update({
+      "name": result.substring(result.length - 21),
+      "conversionStatus": 0,
+//      "followUp": followUpStatus,
+      "dateStamp": new DateFormat.yMd().format(new DateTime.now())
+    });
+
+    //UPLOAD FILE AND PUSH FILE
+    if (result != "Recording On ") {
+      //UPLOAD FILE
+      File file = new File(result);
+      StorageReference ref = FirebaseStorage.instance
+          .ref()
+          .child("Audio")
+          .child(widget.email.replaceAll(".", " "))
+          .child(result.substring(result.length - 21));
+      StorageUploadTask uploadTask = ref.put(file);
+
+      //GET URL
+      Uri fileUrl = (await uploadTask.future).downloadUrl;
+      print("File Uploaded == > $result");
+
+      //PUSH TO AUDIO
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .child(uploadAudioFileKey)
+          .update({
+        "url": fileUrl.toString(),
+      });
+    }
+//    stillUploadingLastOne = 0;
   }
 }

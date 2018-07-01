@@ -46,22 +46,7 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         floatingActionButton: new ScopedModelDescendant<CounterModel>(
-          builder: (context, child, model) => new FloatingActionButton(
-                onPressed: () {
-                  model.increment();
-                  print("====>>>>  ${model.counter}");
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    new Text("Go"),
-                    Transform.rotate(
-                      child: new Icon(Icons.subdirectory_arrow_left),
-                      angle: 0.0,
-                    ),
-                  ],
-                ),
-              ),
+          builder: (context, child, model) => renderFloatingActionButton(model),
         ),
       ),
     );
@@ -71,7 +56,32 @@ class _MainScreenState extends State<MainScreen> {
     if (recorderWidgetState.isEven) {
       return Container();
     } else {
-      return new RecorderWidget();
+      return new RecorderWidget(
+        email: widget.email,
+      );
+    }
+  }
+
+  Widget renderFloatingActionButton(model) {
+    if (model.counter.isOdd) {
+      return Container();
+    } else {
+      return new FloatingActionButton(
+        onPressed: () {
+          model.increment();
+          print("====>>>>  ${model.counter}");
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            new Text("Go"),
+            Transform.rotate(
+              child: new Icon(Icons.subdirectory_arrow_left),
+              angle: 0.0,
+            ),
+          ],
+        ),
+      );
     }
   }
 }
@@ -84,6 +94,14 @@ class CounterModel extends Model {
   void increment() {
     // First, increment the counter
     _counter++;
+
+    // Then notify all the listeners.
+    notifyListeners();
+  }
+
+  void decrement() {
+    // First, increment the counter
+    _counter--;
 
     // Then notify all the listeners.
     notifyListeners();
