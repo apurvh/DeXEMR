@@ -15,12 +15,15 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:share/share.dart';
 
-import 'package:dex_for_doctor/recorderWidget.dart';
+
+import 'package:dex_for_doctor/mainScreen.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
 
 String _emailID;
+
+int googleSilentChecker = 0;
 
 void main() => runApp(new MyApp());
 
@@ -45,45 +48,199 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  @override
+  Widget build(BuildContext context) {
+
+    print("GoogleSignIn: "+googleSignIn.currentUser.toString());
+
+    if (googleSignIn.currentUser == null) {
+      return new LoginWidget();
+    } else {
+      return new MainScreen();
+    }
+  }
+}
+
+
+
+//LOGIN FLOW
+class LoginWidget extends StatefulWidget {
+  @override
+  _LoginWidgetState createState() => new _LoginWidgetState();
+}
+
+class _LoginWidgetState extends State<LoginWidget> {
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text("DeX Go"),
-        elevation: 4.0,
-        backgroundColor: Colors.teal[800],
-        actions: <Widget>[
-          new IconButton(
-            icon: new Icon(Icons.search),
-            onPressed: () {},
-          )
-        ],
-      ),
-      body: new Column(
-        children: <Widget>[
-          new RecorderWidget(),
-//          new Divider(),
-          new Container(
-            color: Colors.white,
+      body: new Container(
+        decoration: new BoxDecoration(
+          image: new DecorationImage(
+            image: new AssetImage("assets/DeXXX.jpg"),
+            fit: BoxFit.cover,
           ),
-        ],
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: () {},
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            new Text("Go"),
-            Transform.rotate(
-              child: new Icon(Icons.subdirectory_arrow_left),
-              angle: 0.0,
-            ),
-          ],
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              new Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(60.0),
+                  child: new Text(
+                    "DeX",
+                    style: new TextStyle(
+                      color: Colors.white,
+                      fontSize: 70.0,
+                      fontWeight: FontWeight.bold,
+                      decorationStyle: TextDecorationStyle.double,
+                    ),
+                  ),
+                ),
+                decoration: new BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.transparent,
+                  border: new Border.all(
+                    color: Colors.blueGrey[50],
+                    width: 2.0,
+                  ),
+                ),
+              ),
+              new Padding(
+                padding: const EdgeInsets.only(top: 28.0),
+                child: new Text(
+                  "DeX EMR Helps You To Collect Patient Records",
+                  style: new TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.0,
+                  ),
+                ),
+              ),
+              new Text(
+                "Simple | Fast | Secure",
+                style: new TextStyle(
+                  color: Colors.white,
+                  fontSize: 15.0,
+                ),
+              ),
+              new Padding(
+                padding: const EdgeInsets.only(top: 50.0),
+                child: buttonThatControlsLoginGoogle(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  // START UP FUNCTIONS
+  @override
+  void initState() {
+    super.initState();
+    print("INIT STATE RUN");
+    googleSilentCheckerFunction();
+//    initPlatformState();
+//    getPermissionAndroid();
+//
+//    messagingToken();
+  }
+
+  //CHECKS WHETHER USER IS ALREADY GOOGLE SIGNED
+  Future googleSilentCheckerFunction() async {
+    print("googleSilentCheckerFunction RUN");
+    GoogleSignInAccount xUser = googleSignIn.currentUser;
+
+//    localStorage = await SharedPreferences.getInstance();
+//    //Get STATE OF LOGIN
+//    loginStateStored = localStorage.getInt("loginInState");
+
+    if (xUser == null) {
+      xUser = await googleSignIn.signInSilently();
+      if (xUser == null) {
+        //failed
+        googleSilentChecker = 2;
+        setState(() {});
+        print("googleSilentCheckerFunction RUN==>2 | NO GOOGLE");
+      } else {
+        //success
+        googleSilentChecker = 1;
+        setState(() {});
+        print("googleSilentCheckerFunction RUN==>1 | ACC EXITS");
+        _emailID = googleSignIn.currentUser.email;
+
+        //RESTART THE APP
+        runApp(MyApp());
+
+//        //UPDATE TOKEN TO CLOUD
+//        FirebaseDatabase.instance
+//            .reference()
+//            .child("DeXAutoCollect")
+//            .child("wallet")
+//            .child(_emailID.replaceAll(".", " "))
+//            .update({"token": tokenId});
+//        print("FCM TOCKEN========>>>>>>>>>: uploaded successfully");
+      }
+    }
+  }
+
+  //THIS WIDGET RENDERS GOOGLE SIGN IN OR NOTHING USING STATE
+  Widget buttonThatControlsLoginGoogle() {
+    if (googleSilentChecker == 2) {
+      return new Padding(
+        padding: const EdgeInsets.only(top: 10.0),
+        child: new RaisedButton(
+          onPressed: () {
+            ensureLoggedIn();
+            print("Button PRESSED");
+          },
+          child: new Image.asset(
+            "assets/googleSignIn.png",
+            width: 180.0,
+            fit: BoxFit.cover,
+          ),
+          padding: const EdgeInsets.all(0.0),
+        ),
+      );
+    } else {
+      return new Container();
+    }
+  }
+
+  //LOGIN BUTTON IS INIT
+  Future<Null> ensureLoggedIn() async {
+    print("RUNNING ESURE LOOGED IN");
+    GoogleSignInAccount user = googleSignIn.currentUser;
+    if (user == null) {
+      user = await googleSignIn.signInSilently();
+    }
+    if (user == null) {
+      await googleSignIn.signIn();
+    }
+    if (await auth.currentUser() == null) {
+      GoogleSignInAuthentication credentials =
+      await googleSignIn.currentUser.authentication;
+      await auth.signInWithGoogle(
+        idToken: credentials.idToken,
+        accessToken: credentials.accessToken,
+      );
+//      await localStorage.setInt("loginInState", 1);
+//      print("Wrote to shared pref local storage: login State: => 1");
+    }
+    print("ENSURE LOGGED IN SUCCESS: ");
+    _emailID = googleSignIn.currentUser.email;
+
+    //RESTART THE APP
+    runApp(MyApp());
+
+    setState(() {});
+  }
+
 }
+
 
 ////NAME TO BE USED TO LOAD PATIENT EMR
 //String patientCode;
@@ -959,326 +1116,3 @@ class _MyHomePageState extends State<MyHomePage> {
 //  }
 //}
 //
-////AFTER CLICKING LIST ICON ON MAIN SCREEN
-//class ListScreen extends StatefulWidget {
-//  @override
-//  _ListScreenState createState() => new _ListScreenState();
-//}
-//
-//class _ListScreenState extends State<ListScreen> {
-//  BuildContext _scaffoldContext;
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return new Scaffold(
-//      appBar: new AppBar(
-//        title: new Text("Patient Records"),
-//      ),
-//      body: new Builder(builder: (BuildContext context) {
-//        _scaffoldContext = context;
-//        return _recordsList();
-//      }),
-//    );
-//  }
-//
-//  final referenceToRecords = FirebaseDatabase.instance
-//      .reference()
-//      .child("DeXAutoCollect")
-//      .child("list")
-//      .child(_emailID.replaceAll(".", " "));
-//
-//  //LIST OF PATIENT RECORDS FROM DB
-//  Widget _recordsList() {
-//    return new Column(
-//      children: <Widget>[
-//        new Flexible(
-//          child: new FirebaseAnimatedList(
-//            query: referenceToRecords,
-//            itemBuilder:
-//                (_, DataSnapshot snapshot, Animation<double> animation, int i) {
-//              return _recordsListTile(snapshot);
-//            },
-//            sort: (a, b) => b.key.compareTo(a.key),
-//            defaultChild: new Center(child: new Text("loading..")),
-//          ),
-//        ),
-//      ],
-//    );
-//  }
-//
-//  Widget _recordsListTile(snapshot) {
-//    if (snapshot.value["conversionStatus"] == 0) {
-//      return new Column(
-//        children: <Widget>[
-//          new ListTile(
-//              leading: new Icon(
-//                Icons.cached,
-//                size: 15.0,
-//                color: Colors.grey[400],
-//              ),
-//              title: new Text(
-//                snapshot.value["name"].toString().split(".")[0],
-//                style: new TextStyle(color: Colors.grey[600]),
-//              ),
-//              trailing: new Text(
-//                snapshot.value["dateStamp"],
-//                style: new TextStyle(color: Colors.grey[600]),
-//              )),
-//          new Divider(),
-//        ],
-//      );
-//    } else {
-//      return new Column(
-//        children: <Widget>[
-//          new ListTile(
-//            leading: colorOfTick(snapshot),
-//            title: new Text(
-//              snapshot.value["newName"],
-//              style: new TextStyle(
-//                  color: Colors.grey[900], fontWeight: FontWeight.bold),
-//            ),
-//            trailing: new Text(
-//              snapshot.value["dateStamp"],
-//              style: new TextStyle(color: Colors.grey[800]),
-//            ),
-//            onTap: () {
-//              //GET KEY AND PASS IT
-//              patientKey = snapshot.key;
-//              print("patientKey: " + patientKey);
-//              referenceToRecords.child(patientKey).update({"seen": 1});
-//
-//              //SET PATIENT CODE WHICH IS USED TO LAOD PATIENT EMR
-//              patientCode = snapshot.value["newName"] +
-//                  "-" +
-//                  snapshot.value["phone"].toString();
-//              print("Redirected to EMR and patientCode: " + patientCode);
-//
-//              //MATERIAL ROUTE TO EMR
-//              Navigator
-//                  .of(context)
-//                  .push(new MaterialPageRoute(builder: (context) {
-//                return new EMRPage();
-//              }));
-//            },
-//          ),
-//          new Divider(),
-//        ],
-//      );
-//    }
-//  }
-//
-//  //RENDERS COLOR OF TICK IN RECORDS LIST
-//  Widget colorOfTick(snapshot) {
-//    if (snapshot.value["seen"] == 1) {
-//      return new Icon(
-//        Icons.done_all,
-//        size: 22.0,
-//        color: Colors.teal[600],
-//      );
-//    } else {
-//      return new Icon(
-//        Icons.done_all,
-//        size: 15.0,
-//        color: Colors.grey[400],
-//      );
-//    }
-//  }
-//}
-//
-////THIS RENDERS EMR
-//class EMRPage extends StatefulWidget {
-//  @override
-//  _EMRPageState createState() => new _EMRPageState();
-//}
-//
-//class _EMRPageState extends State<EMRPage> {
-//  AudioPlayer audioPlayer = new AudioPlayer();
-//
-//  @override
-//  void initState() {
-//    super.initState();
-//  }
-//
-//  final referenceToEMR = FirebaseDatabase.instance
-//      .reference()
-//      .child("DeXAutoCollect")
-//      .child("EMR")
-//      .child(_emailID.replaceAll(".", " "))
-//      .child(patientCode);
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return new Scaffold(
-//      appBar: new AppBar(
-//        leading: new IconButton(
-//            icon: new Icon(Icons.close),
-//            onPressed: () {
-//              if (audioFileWidgetState == 1) stopSound();
-//              Navigator.pop(context);
-//            }),
-//        title: new Text(patientCode.split("-")[0]),
-//        automaticallyImplyLeading: false,
-//        actions: <Widget>[
-//          new IconButton(
-//              icon: new Icon(Icons.share),
-//              onPressed: () {
-//                shareButton();
-//              })
-//        ],
-//      ),
-//      body: new Column(
-//        children: <Widget>[
-//          new Flexible(
-//            child: new FirebaseAnimatedList(
-//              query: referenceToEMR,
-//              itemBuilder: (_, DataSnapshot snapshot,
-//                  Animation<double> animation, int i) {
-//                return textRenderForEMR(snapshot);
-//              },
-////              sort: (a, b) => b.key.compareTo(a.key),
-//              defaultChild: new Center(child: new Text("Loading...")),
-//            ),
-//          ),
-//        ],
-//      ),
-//    );
-//  }
-//
-//  //share button email
-//  Future shareButton() async {
-//    List shareData;
-//    String shareDataText = "Medical Records of $patientCode : \n\n";
-//    await FirebaseDatabase.instance
-//        .reference()
-//        .child("DeXAutoCollect")
-//        .child("EMR")
-//        .child(_emailID.replaceAll(".", " "))
-//        .child(patientCode)
-//        .once()
-//        .then((DataSnapshot snap) {
-//      shareData = snap.value;
-//    });
-//    for (var i = 0; i < shareData.length - 1; i++) {
-//      print("==============>${shareData[i]["head"]}");
-//      String shareDataTextloopHead;
-//      String shareDataTextloopCon;
-//
-//      shareDataTextloopHead = shareData[i]["head"].toString();
-//      shareDataTextloopCon = shareData[i]["con"].toString();
-//
-//      //Remove Blanks
-//      if (shareDataTextloopCon == "") {
-//      } else {
-//        shareDataText = shareDataText +
-//            shareDataTextloopHead +
-//            ": " +
-//            shareDataTextloopCon +
-//            "\n\n";
-//      }
-//    }
-//    print("Snap value: ==>> $shareDataText");
-//    Share.share(shareDataText);
-//  }
-//
-//  int audioFileWidgetState = 0;
-//  Future<Null> playSound(audioUrl) async {
-//    await audioPlayer.play(audioUrl);
-//  }
-//
-//  Future<Null> stopSound() async {
-//    await audioPlayer.stop();
-//  }
-//
-//  Widget audioFileWidget(snapshot) {
-//    if (audioFileWidgetState == 0) {
-//      return new FlatButton.icon(
-//        icon: new Icon(
-//          Icons.play_circle_outline,
-//          size: 40.0,
-//          color: Colors.blueGrey,
-//        ),
-//        label: new Text("Play"),
-//        onPressed: () {
-//          print("Audio File plaiyng: " + snapshot.value["con"]);
-//          playSound(snapshot.value["con"]);
-//          audioFileWidgetState = 1;
-//          setState(() {});
-//        },
-//      );
-//    } else {
-//      return new FlatButton.icon(
-//        icon: new Icon(
-//          Icons.stop,
-//          size: 40.0,
-//          color: Colors.blueGrey,
-//        ),
-//        label: new Text("Stop"),
-//        onPressed: () {
-//          stopSound();
-//          audioFileWidgetState = 0;
-//          setState(() {});
-//        },
-//      );
-//    }
-//  }
-//
-//  //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
-//  Widget textRenderForEMR(snapshot) {
-//    if (snapshot.value["head"].toString() == "DATE") {
-//      return new Padding(
-//        padding: const EdgeInsets.all(8.0),
-//        child: new Center(
-//          child: new Text(
-//            "------ " + snapshot.value["con"] + " ------",
-//            style: new TextStyle(color: Colors.grey[500]),
-//          ),
-//        ),
-//      );
-//    } else if (snapshot.value["head"].toString() == "AUDI") {
-//      return new Padding(
-//        padding: const EdgeInsets.only(top: 10.0, bottom: 20.0, left: 10.0),
-//        child: new Column(
-//          children: <Widget>[
-//            new Row(
-//              children: <Widget>[
-//                new Text(
-//                  "AUDIO FILE",
-//                  style: new TextStyle(
-//                      fontWeight: FontWeight.bold,
-//                      color: Colors.teal,
-//                      fontSize: 14.0),
-//                ),
-//              ],
-//            ),
-//            audioFileWidget(snapshot),
-//          ],
-//        ),
-//      );
-//    } else if (snapshot.value["con"].toString() != "") {
-//      return new Container(
-//        child: new Padding(
-//          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-//          child: new Column(
-//            mainAxisAlignment: MainAxisAlignment.start,
-//            crossAxisAlignment: CrossAxisAlignment.start,
-//            children: <Widget>[
-//              new Text(
-//                snapshot.value["head"],
-//                style: new TextStyle(
-//                    fontWeight: FontWeight.bold,
-//                    color: Colors.teal,
-//                    fontSize: 14.0),
-//              ),
-//              new Text(
-//                snapshot.value["con"].toString(),
-//                style: new TextStyle(fontSize: 18.0),
-//              )
-//            ],
-//          ),
-//        ),
-//      );
-//    } else {
-//      return new Container();
-//    }
-//  }
-//}
