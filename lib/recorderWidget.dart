@@ -8,10 +8,9 @@ class RecorderWidget extends StatefulWidget {
 class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   Widget build(BuildContext context) {
-    if(false){
+    if (true) {
       return new Container();
-    }
-    else{
+    } else {
       return new Container(
         padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 25.0),
         color: Colors.blueGrey[50],

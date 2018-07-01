@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:dex_for_doctor/recorderWidget.dart';
 import 'package:dex_for_doctor/emrListWidget.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:dex_for_doctor/emrListWidget.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({Key key, this.email});
+
+  final String email;
+
   @override
   _MainScreenState createState() => new _MainScreenState();
 }
@@ -10,6 +16,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
+    String _emailID = widget.email;
+
     return new Scaffold(
       appBar: new AppBar(
         title: new Text("DeX EMR"),
@@ -25,9 +33,8 @@ class _MainScreenState extends State<MainScreen> {
       body: new Column(
         children: <Widget>[
           new RecorderWidget(),
-//          new Divider(),
-          new Container(
-            color: Colors.white,
+          Expanded(
+            child: new EMRListWidget(email: _emailID),
           ),
         ],
       ),

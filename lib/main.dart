@@ -15,7 +15,6 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:audioplayer/audioplayer.dart';
 import 'package:share/share.dart';
 
-
 import 'package:dex_for_doctor/mainScreen.dart';
 
 final auth = FirebaseAuth.instance;
@@ -48,21 +47,19 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
-
-    print("GoogleSignIn: "+googleSignIn.currentUser.toString());
+    print("GoogleSignIn: " + googleSignIn.currentUser.toString());
 
     if (googleSignIn.currentUser == null) {
       return new LoginWidget();
     } else {
-      return new MainScreen();
+      return new MainScreen(
+        email: _emailID,
+      );
     }
   }
 }
-
-
 
 //LOGIN FLOW
 class LoginWidget extends StatefulWidget {
@@ -71,7 +68,6 @@ class LoginWidget extends StatefulWidget {
 }
 
 class _LoginWidgetState extends State<LoginWidget> {
-
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -222,7 +218,7 @@ class _LoginWidgetState extends State<LoginWidget> {
     }
     if (await auth.currentUser() == null) {
       GoogleSignInAuthentication credentials =
-      await googleSignIn.currentUser.authentication;
+          await googleSignIn.currentUser.authentication;
       await auth.signInWithGoogle(
         idToken: credentials.idToken,
         accessToken: credentials.accessToken,
@@ -238,9 +234,7 @@ class _LoginWidgetState extends State<LoginWidget> {
 
     setState(() {});
   }
-
 }
-
 
 ////NAME TO BE USED TO LOAD PATIENT EMR
 //String patientCode;
