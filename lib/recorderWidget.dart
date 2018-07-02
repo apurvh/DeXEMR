@@ -59,6 +59,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                           model.decrement();
                           print("====>>>>  ${model.counter}");
                           redButtonStateChannelFunction(model.counter);
+                          Scaffold.of(context).showSnackBar(new SnackBar(
+                                content: new Text(
+                                  "Uploading Audio File ...",
+                                ),
+                                duration: new Duration(seconds: 4),
+                              ));
                         },
                         child: new Icon(
                           Icons.done,

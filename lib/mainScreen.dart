@@ -82,11 +82,11 @@ class _MainScreenState extends State<MainScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            new Text("Go"),
-            Transform.rotate(
-              child: new Icon(Icons.subdirectory_arrow_left),
-              angle: 0.0,
-            ),
+            new Text("+EMR"),
+//            Transform.rotate(
+//              child: new Icon(Icons.plus_one),
+//              angle: 0.0,
+//            ),
           ],
         ),
       );
