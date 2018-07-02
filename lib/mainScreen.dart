@@ -159,14 +159,32 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
+//THIS MODEL STORES AND PASSES DATA SUCH AS TIME AND STATES OF RECORDER WIDGET AND STOPWATCH
 class CounterModel extends Model {
   int _counter = 0;
-
   int get counter => _counter;
+
+  //GETTERS FOR ELAPSED MINUTES AND SECONDS
+  var stopWatch = new Stopwatch();
+  String get elapsedTimeSec =>
+      stopWatch.elapsed.inSeconds.toString().padLeft(2, '0');
+  String get elapsedTimeMin =>
+      stopWatch.elapsed.inMinutes.toString().padLeft(2, '0');
+
+  void stopWatchResume() {
+    stopWatch.start();
+    notifyListeners();
+  }
+
+  void stopWatchPause() {
+    stopWatch.stop();
+    notifyListeners();
+  }
 
   void increment() {
     // First, increment the counter
     _counter = 1;
+    stopWatch.start();
 
     // Then notify all the listeners.
     notifyListeners();
@@ -175,6 +193,8 @@ class CounterModel extends Model {
   void decrement() {
     // First, increment the counter
     _counter = 0;
+    stopWatch.stop();
+    stopWatch.reset();
 
     // Then notify all the listeners.
     notifyListeners();

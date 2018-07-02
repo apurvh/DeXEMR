@@ -26,6 +26,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     if (false) {
       return new Container();
     } else {
+      print("whole Widget drwn!!!!");
+
       return new Container(
         margin: const EdgeInsets.only(bottom: 4.0),
         padding: const EdgeInsets.fromLTRB(12.0, 25.0, 12.0, 25.0),
@@ -43,48 +45,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            pauseButton(),
-            new Container(
-              decoration: new BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.grey[50],
-                border: Border.all(
-                  color: Colors.red[300],
-                  width: 10.0,
-                ),
-                boxShadow: [
-                  new BoxShadow(
-                    blurRadius: 1.0,
-                    spreadRadius: 0.0,
-                    color: Colors.red[800],
-                  )
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(30.0),
-                child: new Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    new Text(
-                      "00:02",
-                      style: new TextStyle(
-                        fontSize: 25.0,
-                        color: Colors.grey[900],
-//                      fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    new Text(
-                      "Timer",
-                      style: new TextStyle(
-                        color: Colors.grey[900],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            new ScopedModelDescendant<CounterModel>(
+              builder: (context, child, model) => pauseButton(model),
             ),
+            new ScopedModelDescendant<CounterModel>(
+                builder: (context, child, model) =>
+                    timer(model.elapsedTimeMin, model.elapsedTimeSec)),
             new Column(
               children: <Widget>[
                 new ScopedModelDescendant<CounterModel>(
@@ -123,7 +89,58 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
-  Widget pauseButton() {
+  Widget timer(String mins, String secs) {
+    print("timer drwn!!!!");
+    refreshTimer();
+    return new Container(
+      decoration: new BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.grey[50],
+        border: Border.all(
+          color: Colors.red[300],
+          width: 10.0,
+        ),
+        boxShadow: [
+          new BoxShadow(
+            blurRadius: 1.0,
+            spreadRadius: 0.0,
+            color: Colors.red[800],
+          )
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            new Text(
+              mins + ":" + secs,
+              style: new TextStyle(
+                fontSize: 25.0,
+                color: Colors.grey[900],
+//                      fontWeight: FontWeight.bold,
+              ),
+            ),
+            new Text(
+              "Timer",
+              style: new TextStyle(
+                color: Colors.grey[900],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future refreshTimer() async {
+    sleep(const Duration(milliseconds: 100));
+    setState(() {});
+  }
+
+  Widget pauseButton(model) {
     if (pauseButtonState == 0) {
       return new Column(
         children: <Widget>[
@@ -132,6 +149,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
               pauseButtonState = 1;
               print("PAUSE PRESSED");
               redButtonStateChannelFunction(2);
+              model.stopWatchPause();
               setState(() {});
             },
             child: new Icon(
@@ -164,6 +182,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
               pauseButtonState = 0;
               print("RESUME PRESSED");
               redButtonStateChannelFunction(3);
+              model.stopWatchResume();
               setState(() {});
             },
             child: new Icon(
@@ -191,6 +210,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
+  //0 = STOP RECORDING
+  //1 = PLAY RECORDING
+  //2 = PAUSE RECORDING
+  //3 = RESUME RECORDING
   //PLATFORM
   static const platform = const MethodChannel('dex.channels/dfRedButtonState');
 

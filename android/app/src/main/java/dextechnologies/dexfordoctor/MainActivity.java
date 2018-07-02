@@ -131,7 +131,7 @@ public class MainActivity extends FlutterActivity {
 
                   }else if(redButtonState==2){
                     mRecorder.pause();
-                  }else if(redButtonState==3){
+                  }else{
                     mRecorder.resume();
                   }
 
