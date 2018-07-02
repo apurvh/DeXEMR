@@ -112,13 +112,13 @@ public class MainActivity extends FlutterActivity {
                   //WHEN TRUE IS RECEIVED FROM FLUTTER CHANNEL THEN RECORDING IS STOPPED
                   //VICE VERSA FOR FALSE
 
-                  if(redButtonState%2==0){
+                  if(redButtonState==0){
                     stopRecording();
                     result.success(mFileName);
 
                     unregisterReceiver(phonestatereceiver);
 
-                  }else{
+                  }else if(redButtonState==1){
 
 
                     startRecording();
@@ -129,9 +129,12 @@ public class MainActivity extends FlutterActivity {
                     filter.addAction(android.telephony.TelephonyManager.ACTION_PHONE_STATE_CHANGED);
                     registerReceiver(phonestatereceiver,filter);
 
-
-
+                  }else if(redButtonState==2){
+                    mRecorder.pause();
+                  }else if(redButtonState==3){
+                    mRecorder.resume();
                   }
+
 
                 } else  {
                   result.notImplemented();

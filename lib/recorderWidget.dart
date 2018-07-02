@@ -19,6 +19,8 @@ class RecorderWidget extends StatefulWidget {
 }
 
 class _RecorderWidgetState extends State<RecorderWidget> {
+  int pauseButtonState = 0;
+
   @override
   Widget build(BuildContext context) {
     if (false) {
@@ -41,32 +43,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            new Column(
-              children: <Widget>[
-                new RawMaterialButton(
-                  onPressed: () {},
-                  child: new Icon(
-                    Icons.pause,
-                    size: 40.0,
-                    color: Colors.blueGrey[800],
-                  ),
-                  shape: new CircleBorder(),
-                  elevation: 2.0,
-                  fillColor: Colors.white,
-                  padding: const EdgeInsets.all(15.0),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: new Text(
-                    "Pause",
-                    style: new TextStyle(
-                      color: Colors.blueGrey[800],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            pauseButton(),
             new Container(
               decoration: new BoxDecoration(
                 shape: BoxShape.circle,
@@ -115,6 +92,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                         onPressed: () {
                           model.decrement();
                           print("====>>>>  ${model.counter}");
+                          redButtonStateChannelFunction(model.counter);
                         },
                         child: new Icon(
                           Icons.done,
@@ -145,13 +123,81 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
+  Widget pauseButton() {
+    if (pauseButtonState == 0) {
+      return new Column(
+        children: <Widget>[
+          new RawMaterialButton(
+            onPressed: () {
+              pauseButtonState = 1;
+              print("PAUSE PRESSED");
+              redButtonStateChannelFunction(2);
+              setState(() {});
+            },
+            child: new Icon(
+              Icons.pause,
+              size: 40.0,
+              color: Colors.blueGrey[800],
+            ),
+            shape: new CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.white,
+            padding: const EdgeInsets.all(15.0),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: new Text(
+              "Pause",
+              style: new TextStyle(
+                color: Colors.blueGrey[800],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return new Column(
+        children: <Widget>[
+          new RawMaterialButton(
+            onPressed: () {
+              pauseButtonState = 0;
+              print("RESUME PRESSED");
+              redButtonStateChannelFunction(3);
+              setState(() {});
+            },
+            child: new Icon(
+              Icons.play_arrow,
+              size: 40.0,
+              color: Colors.blueGrey[800],
+            ),
+            shape: new CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.white,
+            padding: const EdgeInsets.all(15.0),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: new Text(
+              "Resume",
+              style: new TextStyle(
+                color: Colors.blueGrey[800],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   //PLATFORM
   static const platform = const MethodChannel('dex.channels/dfRedButtonState');
 
   //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
-  Future redButtonStateChannelFunction() async {
+  Future redButtonStateChannelFunction(int redButtonState) async {
     String result = await platform.invokeMethod('stateReply', {
-//      'redButtonState': _recordPauseSwitch,
+      'redButtonState': redButtonState,
       'time': new DateTime.now().millisecondsSinceEpoch.toString()
     });
     print("RESULT IS: " + result);
