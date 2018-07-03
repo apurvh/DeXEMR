@@ -253,7 +253,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       "name": result.substring(result.length - 21),
       "conversionStatus": 0,
 //      "followUp": followUpStatus,
-      "dateStamp": new DateFormat.yMd().format(new DateTime.now())
+      "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
     });
 
     //UPLOAD FILE AND PUSH FILE

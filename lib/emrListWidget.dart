@@ -72,7 +72,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
                 style: new TextStyle(color: Colors.grey[600]),
               ),
               trailing: new Text(
-                snapshot.value["dateStamp"],
+                snapshot.value["dateStamp"].toString().split(" ")[0],
                 style: new TextStyle(color: Colors.grey[600]),
               )),
           new Divider(),
