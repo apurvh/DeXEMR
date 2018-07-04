@@ -69,7 +69,11 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               ),
               title: new Text(
                 snapshot.value["name"].toString().split(".")[0],
-                style: new TextStyle(color: Colors.grey[600]),
+                style: new TextStyle(color: Colors.grey[700], fontSize: 14.0),
+              ),
+              subtitle: new Text(
+                "Processing...",
+                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
               ),
               trailing: new Text(
                 snapshot.value["dateStamp"].toString().split(" ")[0],
@@ -87,6 +91,10 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               snapshot.value["newName"],
               style: new TextStyle(
                   color: Colors.grey[900], fontWeight: FontWeight.bold),
+            ),
+            subtitle: new Text(
+              snapshot.value["phone"],
+              style: new TextStyle(color: Colors.grey[900], fontSize: 12.0),
             ),
             trailing: new Text(
               snapshot.value["dateStamp"],
