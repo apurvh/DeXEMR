@@ -56,15 +56,26 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                 new ScopedModelDescendant<CounterModel>(
                   builder: (context, child, model) => new RawMaterialButton(
                         onPressed: () {
-                          model.decrement();
-                          print("====>>>>  ${model.counter}");
-                          redButtonStateChannelFunction(model.counter);
-                          Scaffold.of(context).showSnackBar(new SnackBar(
-                                content: new Text(
-                                  "Uploading Audio File ...",
-                                ),
-                                duration: new Duration(seconds: 4),
-                              ));
+                          //for paused state
+                          //only for sdk < 24 to support that resume pause thing
+                          if (pauseButtonState == 1) {
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                                  content: new Text(
+                                    "FIrst Resume -> then Save",
+                                  ),
+                                  duration: new Duration(seconds: 4),
+                                ));
+                          } else {
+                            model.decrement();
+                            print("====>>>>  ${model.counter}");
+                            redButtonStateChannelFunction(model.counter);
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                                  content: new Text(
+                                    "Uploading Audio File ...",
+                                  ),
+                                  duration: new Duration(seconds: 4),
+                                ));
+                          }
                         },
                         child: new Icon(
                           Icons.done,
@@ -142,7 +153,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   Future refreshTimer() async {
-    sleep(const Duration(milliseconds: 100));
+    sleep(const Duration(milliseconds: 250));
     setState(() {});
   }
 
@@ -243,6 +254,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .key;
 
 //    print(uploadAudioFileKey);
+    //ADD TO THE LIST
     await FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
@@ -280,6 +292,20 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           .child(uploadAudioFileKey)
           .update({
         "url": fileUrl.toString(),
+      });
+
+      //CREATE A BACKEND REQUEST
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("backend")
+          .child("oneBigListOfEMRRequests")
+          .push()
+          .set({
+        "audioUrl": fileUrl.toString(),
+        "email": widget.email.replaceAll(".", " "),
+        "key": uploadAudioFileKey,
+        "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
       });
     }
 //    stillUploadingLastOne = 0;

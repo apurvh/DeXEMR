@@ -1,41 +1,43 @@
 package dextechnologies.dexfordoctor;
 
 
-import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRecorder;
-import android.os.AsyncTask;
-import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
-import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.coremedia.iso.boxes.Container;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import io.flutter.app.FlutterActivity;
-import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.googlecode.mp4parser.authoring.Movie;
+import com.googlecode.mp4parser.authoring.Track;
+import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
+import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
+import com.googlecode.mp4parser.authoring.tracks.AppendTrack;
+
 
 public class MainActivity extends FlutterActivity {
 
@@ -52,6 +54,11 @@ public class MainActivity extends FlutterActivity {
 
   NotificationManager notificationManager;
 
+  //contains source files for pause function (android sdk < 24)
+  List<String> sourceFiles = new ArrayList<>();
+
+//  String sourceFiles[];
+
   //FIRE BASE STORAGE
 //  FirebaseStorage storage = FirebaseStorage.getInstance();
 //  private StorageReference mStorage;
@@ -66,21 +73,21 @@ public class MainActivity extends FlutterActivity {
         if (state.equals(TelephonyManager.EXTRA_STATE_RINGING)) {
           //pause here
           if (stateOfMRecorder==1){
-            mRecorder.pause();
+            pauseRecording();
             stateOfMRecorder=2;
           }
         }
         else if (state.equals(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
           //pause here
           if (stateOfMRecorder==1){
-            mRecorder.pause();
+            pauseRecording();
             stateOfMRecorder=2;
             }
         }
         else if (state.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
           //play here
           if (stateOfMRecorder==2){
-            mRecorder.resume();
+            resumeRecording();
             }
         }
       }
@@ -130,9 +137,9 @@ public class MainActivity extends FlutterActivity {
                     registerReceiver(phonestatereceiver,filter);
 
                   }else if(redButtonState==2){
-                    mRecorder.pause();
+                    pauseRecording();
                   }else{
-                    mRecorder.resume();
+                    resumeRecording();
                   }
 
 
@@ -183,12 +190,89 @@ public class MainActivity extends FlutterActivity {
 
   }
 
+//  int recorderStoppedState =0;
+
   private void stopRecording() {
-    mRecorder.stop();
-    mRecorder.release();
-    mRecorder = null;
-    stateOfMRecorder=0;
+
+//    if(recorderStoppedState !=1) {
+      mRecorder.stop();
+      mRecorder.release();
+      mRecorder = null;
+        stateOfMRecorder = 0;
+
+//    }
+
+      if (Build.VERSION.SDK_INT < 24 && !(sourceFiles.toArray().length>1)) {
+
+        sourceFiles.add(mFileName);
+
+        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+        mFileName += "/DeX/DeX_" + System.currentTimeMillis() + ".m4a";
+        String[] sourceFilesArray = sourceFiles.toArray(new String[0]);
+        mergeMediaFiles(true, sourceFilesArray, mFileName);
+        sourceFiles.clear(); //clear all recording fragments
+
+      }
+
+
   }
 
+
+  //FOR SDK < 24 PAUSE() IS NOT SUPPORTED
+  private void pauseRecording() {
+    if(Build.VERSION.SDK_INT < 24){
+      mRecorder.stop();
+      mRecorder.release();
+      mRecorder = null;
+      stateOfMRecorder=0;
+      sourceFiles.add(mFileName);
+
+//      recorderStoppedState =1;
+    }
+    else{
+      mRecorder.pause();
+    }
+  }
+  private void resumeRecording() {
+    if(Build.VERSION.SDK_INT < 24){
+      startRecording();
+//      recorderStoppedState=0;
+    }
+    else{
+      mRecorder.resume();
+    }
+  }
+
+  //this dude combines sourcefiles
+  public static boolean mergeMediaFiles(boolean isAudio, String sourceFiles[], String targetFile) {
+    try {
+      String mediaKey = isAudio ? "soun" : "vide";
+      List<Movie> listMovies = new ArrayList<>();
+      for (String filename : sourceFiles) {
+        listMovies.add(MovieCreator.build(filename));
+      }
+      List<Track> listTracks = new LinkedList<>();
+      for (Movie movie : listMovies) {
+        for (Track track : movie.getTracks()) {
+          if (track.getHandler().equals(mediaKey)) {
+            listTracks.add(track);
+          }
+        }
+      }
+      Movie outputMovie = new Movie();
+      if (!listTracks.isEmpty()) {
+        outputMovie.addTrack(new AppendTrack(listTracks.toArray(new Track[listTracks.size()])));
+      }
+      Container container = new DefaultMp4Builder().build(outputMovie);
+      FileChannel fileChannel = new RandomAccessFile(String.format(targetFile), "rw").getChannel();
+      container.writeContainer(fileChannel);
+      fileChannel.close();
+      return true;
+    }
+    catch (IOException e) {
+      Log.e("tag", "Error merging media files. exception: "+e.getMessage());
+      return false;
+    }
+  }
 
 }
