@@ -202,18 +202,20 @@ public class MainActivity extends FlutterActivity {
 
 //    }
 
-      if (Build.VERSION.SDK_INT < 24 && !(sourceFiles.toArray().length>1)) {
+      sourceFiles.add(mFileName);
+      String[] sourceFilesArray = sourceFiles.toArray(new String[0]);
 
-        sourceFiles.add(mFileName);
+
+      if (Build.VERSION.SDK_INT < 24 && sourceFilesArray.length>1) {
+
 
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
         mFileName += "/DeX/DeX_" + System.currentTimeMillis() + ".m4a";
-        String[] sourceFilesArray = sourceFiles.toArray(new String[0]);
         mergeMediaFiles(true, sourceFilesArray, mFileName);
-        sourceFiles.clear(); //clear all recording fragments
 
       }
 
+      sourceFiles.clear(); //clear all recording fragments
 
   }
 

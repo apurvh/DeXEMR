@@ -106,31 +106,31 @@ class _MainScreenState extends State<MainScreen> {
 
 //    stillUploadingLastOne = 1;
 
-    //GET KEY
-    String uploadAudioFileKey = FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "))
-        .push()
-        .key;
-
-//    print(uploadAudioFileKey);
-    await FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "))
-        .child(uploadAudioFileKey)
-        .update({
-      "name": result.substring(result.length - 21),
-      "conversionStatus": 0,
-//      "followUp": followUpStatus,
-      "dateStamp": new DateFormat.yMd().format(new DateTime.now())
-    });
-
     //UPLOAD FILE AND PUSH FILE
     if (result != "Recording On ") {
+      //GET KEY
+      String uploadAudioFileKey = FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .push()
+          .key;
+
+//    print(uploadAudioFileKey);
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .child(uploadAudioFileKey)
+          .update({
+        "name": result.substring(result.length - 21),
+        "conversionStatus": 0,
+//      "followUp": followUpStatus,
+        "dateStamp": new DateFormat.yMd().format(new DateTime.now())
+      });
+
       //UPLOAD FILE
       File file = new File(result);
       StorageReference ref = FirebaseStorage.instance

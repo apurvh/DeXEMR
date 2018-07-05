@@ -108,6 +108,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
   Widget timer(String mins, String secs) {
     print("timer drwn!!!!");
+
+    //KEEPING VALUE OF STRING LESS THAN 60
+    int intSecs =
+        int.parse(secs).toInt() - (int.parse(secs).toInt() ~/ 60) * 60;
+    String stringSecs = intSecs.toString().padLeft(2, '0');
+    //ENDS
+
     refreshTimer();
     return new Container(
       decoration: new BoxDecoration(
@@ -132,7 +139,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             new Text(
-              mins + ":" + secs,
+              mins + ":" + stringSecs,
               style: new TextStyle(
                 fontSize: 25.0,
                 color: Colors.grey[900],
@@ -153,7 +160,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   Future refreshTimer() async {
-    sleep(const Duration(milliseconds: 250));
+    sleep(const Duration(milliseconds: 1000));
     setState(() {});
   }
 

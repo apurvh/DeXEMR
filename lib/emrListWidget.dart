@@ -93,11 +93,11 @@ class _EMRListWidgetState extends State<EMRListWidget> {
                   color: Colors.grey[900], fontWeight: FontWeight.bold),
             ),
             subtitle: new Text(
-              snapshot.value["phone"],
+              snapshot.value["phone"].toString(),
               style: new TextStyle(color: Colors.grey[900], fontSize: 12.0),
             ),
             trailing: new Text(
-              snapshot.value["dateStamp"],
+              snapshot.value["dateStamp"].toString().split(" ")[0],
               style: new TextStyle(color: Colors.grey[800]),
             ),
             onTap: () {
