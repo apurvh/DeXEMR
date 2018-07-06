@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -211,8 +212,10 @@ public class MainActivity extends FlutterActivity {
 
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
         mFileName += "/DeX/DeX_" + System.currentTimeMillis() + ".m4a";
-        mergeMediaFiles(true, sourceFilesArray, mFileName);
+//        mergeMediaFiles(true, sourceFilesArray, mFileName);
 
+        MyTaskParams params = new MyTaskParams(sourceFilesArray,mFileName);
+        new mergeAudioFiles().execute(params);
       }
 
       sourceFiles.clear(); //clear all recording fragments
@@ -246,35 +249,86 @@ public class MainActivity extends FlutterActivity {
   }
 
   //this dude combines sourcefiles
-  public static boolean mergeMediaFiles(boolean isAudio, String sourceFiles[], String targetFile) {
-    try {
-      String mediaKey = isAudio ? "soun" : "vide";
-      List<Movie> listMovies = new ArrayList<>();
-      for (String filename : sourceFiles) {
-        listMovies.add(MovieCreator.build(filename));
-      }
-      List<Track> listTracks = new LinkedList<>();
-      for (Movie movie : listMovies) {
-        for (Track track : movie.getTracks()) {
-          if (track.getHandler().equals(mediaKey)) {
-            listTracks.add(track);
-          }
-        }
-      }
-      Movie outputMovie = new Movie();
-      if (!listTracks.isEmpty()) {
-        outputMovie.addTrack(new AppendTrack(listTracks.toArray(new Track[listTracks.size()])));
-      }
-      Container container = new DefaultMp4Builder().build(outputMovie);
-      FileChannel fileChannel = new RandomAccessFile(String.format(targetFile), "rw").getChannel();
-      container.writeContainer(fileChannel);
-      fileChannel.close();
-      return true;
-    }
-    catch (IOException e) {
-      Log.e("tag", "Error merging media files. exception: "+e.getMessage());
-      return false;
+//  public static boolean mergeMediaFiles(boolean isAudio, String sourceFiles[], String targetFile) {
+//    try {
+//      String mediaKey = isAudio ? "soun" : "vide";
+//      List<Movie> listMovies = new ArrayList<>();
+//      for (String filename : sourceFiles) {
+//        listMovies.add(MovieCreator.build(filename));
+//      }
+//      List<Track> listTracks = new LinkedList<>();
+//      for (Movie movie : listMovies) {
+//        for (Track track : movie.getTracks()) {
+//          if (track.getHandler().equals(mediaKey)) {
+//            listTracks.add(track);
+//          }
+//        }
+//      }
+//      Movie outputMovie = new Movie();
+//      if (!listTracks.isEmpty()) {
+//        outputMovie.addTrack(new AppendTrack(listTracks.toArray(new Track[listTracks.size()])));
+//      }
+//      Container container = new DefaultMp4Builder().build(outputMovie);
+//      FileChannel fileChannel = new RandomAccessFile(String.format(targetFile), "rw").getChannel();
+//      container.writeContainer(fileChannel);
+//      fileChannel.close();
+//      return true;
+//    }
+//    catch (IOException e) {
+//      Log.e("tag", "Error merging media files. exception: "+e.getMessage());
+//      return false;
+//    }
+//  }
+
+
+  private static class MyTaskParams {
+    String sourceFiles[];
+    String targetFile;
+
+    MyTaskParams(String sourceFiles[], String targetFile) {
+      this.sourceFiles = sourceFiles;
+      this.targetFile = targetFile;
     }
   }
+
+  public static class mergeAudioFiles extends AsyncTask<MyTaskParams,Void,String>{
+
+    @Override
+    protected String doInBackground(MyTaskParams... params) {
+
+      String sourceFiles[]=params[0].sourceFiles;
+      String targetFile=params[0].targetFile;
+
+      try {
+        String mediaKey = "soun";
+        List<Movie> listMovies = new ArrayList<>();
+        for (String filename : sourceFiles) {
+          listMovies.add(MovieCreator.build(filename));
+        }
+        List<Track> listTracks = new LinkedList<>();
+        for (Movie movie : listMovies) {
+          for (Track track : movie.getTracks()) {
+            if (track.getHandler().equals(mediaKey)) {
+              listTracks.add(track);
+            }
+          }
+        }
+        Movie outputMovie = new Movie();
+        if (!listTracks.isEmpty()) {
+          outputMovie.addTrack(new AppendTrack(listTracks.toArray(new Track[listTracks.size()])));
+        }
+        Container container = new DefaultMp4Builder().build(outputMovie);
+        FileChannel fileChannel = new RandomAccessFile(String.format(targetFile), "rw").getChannel();
+        container.writeContainer(fileChannel);
+        fileChannel.close();
+        return null;
+      }
+      catch (IOException e) {
+        Log.e("tag", "Error merging media files. exception: "+e.getMessage());
+        return null;
+      }
+    }
+  }
+
 
 }

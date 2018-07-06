@@ -261,22 +261,23 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .key;
 
 //    print(uploadAudioFileKey);
-    //ADD TO THE LIST
-    await FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "))
-        .child(uploadAudioFileKey)
-        .update({
-      "name": result.substring(result.length - 21),
-      "conversionStatus": 0,
-//      "followUp": followUpStatus,
-      "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
-    });
 
     //UPLOAD FILE AND PUSH FILE
     if (result != "Recording On ") {
+      //ADD TO THE LIST
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .child(uploadAudioFileKey)
+          .update({
+        "name": result.substring(result.length - 21),
+        "conversionStatus": 0,
+//      "followUp": followUpStatus,
+        "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
+      });
+
       //UPLOAD FILE
       File file = new File(result);
       StorageReference ref = FirebaseStorage.instance
