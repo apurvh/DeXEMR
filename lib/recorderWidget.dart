@@ -250,20 +250,19 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     print("RESULT IS: " + result);
 
 //    stillUploadingLastOne = 1;
-
-    //GET KEY
-    String uploadAudioFileKey = FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "))
-        .push()
-        .key;
-
 //    print(uploadAudioFileKey);
 
     //UPLOAD FILE AND PUSH FILE
     if (result != "Recording On ") {
+      //GET KEY
+      String uploadAudioFileKey = FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .push()
+          .key;
+
       //ADD TO THE LIST
       await FirebaseDatabase.instance
           .reference()
@@ -291,7 +290,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       Uri fileUrl = (await uploadTask.future).downloadUrl;
       print("File Uploaded == > $result");
 
-      //PUSH TO AUDIO
+      //PUSH TO THE LIST
       await FirebaseDatabase.instance
           .reference()
           .child("DeXAutoCollect")

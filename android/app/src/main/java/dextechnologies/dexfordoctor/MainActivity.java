@@ -1,6 +1,7 @@
 package dextechnologies.dexfordoctor;
 
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -106,6 +107,7 @@ public class MainActivity extends FlutterActivity {
     //CHANNEL CODE STARTS HERE
     new MethodChannel(getFlutterView(),CHANNEL).setMethodCallHandler(
             new MethodChannel.MethodCallHandler() {
+              @SuppressLint("StaticFieldLeak")
               @Override
               public void onMethodCall(MethodCall methodCall,final MethodChannel.Result result) {
                 if(methodCall.method.equals("stateReply")){
@@ -121,6 +123,20 @@ public class MainActivity extends FlutterActivity {
                   //VICE VERSA FOR FALSE
 
                   if(redButtonState==0){
+
+//                    new AsyncTask<>() {
+//                      @Override
+//                      protected Object doInBackground(Object... objects) {
+//                        stopRecording();
+//                        return null;
+//                      }
+//
+//                      @Override
+//                      protected void onPostExecute(Object o) {
+//                        result.success(mFileName);
+//                      }
+//                    }.execute();
+
                     stopRecording();
                     result.success(mFileName);
 
