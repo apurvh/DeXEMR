@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
         floatingActionButton: new ScopedModelDescendant<CounterModel>(
           builder: (context, child, model) => renderFloatingActionButton(model),
         ),
-//        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
@@ -73,21 +73,33 @@ class _MainScreenState extends State<MainScreen> {
     if (model.counter == 1) {
       return Container();
     } else {
-      return new FloatingActionButton(
-        onPressed: () {
-          model.increment();
-          print("====>>>>  ${model.counter}");
-          redButtonStateChannelFunction(model.counter);
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            new Text("+EMR"),
-//            Transform.rotate(
-//              child: new Icon(Icons.plus_one),
-//              angle: 0.0,
-//            ),
-          ],
+      return new Container(
+        decoration: new BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey[100],
+            boxShadow: [
+              new BoxShadow(
+                  color: Colors.grey, blurRadius: 2.0, spreadRadius: 1.0),
+            ]),
+        padding: const EdgeInsets.all(5.0),
+        child: new RawMaterialButton(
+          onPressed: () {
+            model.increment();
+            print("====>>>>  ${model.counter}");
+            redButtonStateChannelFunction(model.counter);
+          },
+          padding: const EdgeInsets.all(30.0),
+          child: new Text(
+            "+New",
+            style: new TextStyle(
+              color: Colors.white,
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          shape: new CircleBorder(),
+          elevation: 2.0,
+          fillColor: Colors.teal[500],
         ),
       );
     }
