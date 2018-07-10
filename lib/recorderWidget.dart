@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:audio_recorder/audio_recorder.dart';
+import 'package:path_provider/path_provider.dart';
 
 class RecorderWidget extends StatefulWidget {
   const RecorderWidget({Key key, this.email});
@@ -68,7 +70,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                           } else {
                             model.decrement();
                             print("====>>>>  ${model.counter}");
-                            redButtonStateChannelFunction(model.counter);
+//                            redButtonStateChannelFunction(model.counter);
+                            _audioRecorderFunction(model.counter);
+
                             Scaffold.of(context).showSnackBar(new SnackBar(
                                   content: new Text(
                                     "Uploading Audio File ...",
@@ -172,7 +176,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
             onPressed: () {
               pauseButtonState = 1;
               print("PAUSE PRESSED");
-              redButtonStateChannelFunction(2);
+//              redButtonStateChannelFunction(2);
+              _audioRecorderFunction(0);
+
               model.stopWatchPause();
               setState(() {});
             },
@@ -205,7 +211,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
             onPressed: () {
               pauseButtonState = 0;
               print("RESUME PRESSED");
-              redButtonStateChannelFunction(3);
+//              redButtonStateChannelFunction(3);
+              _audioRecorderFunction(1);
               model.stopWatchResume();
               setState(() {});
             },
@@ -235,11 +242,116 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   //0 = STOP RECORDING
-  //1 = PLAY RECORDING
+  //1 = Start RECORDING
+  //2 = PAUSE RECORDING
+  //3 = RESUME RECORDING
+
+  _audioRecorderFunction(int recordState) async {
+    String path;
+    if (recordState == 1) {
+      try {
+        if (await AudioRecorder.hasPermissions) {
+          //CREATE DIRECTORY-Path
+          new Directory('DeX');
+          Directory appDocDirectory = await getApplicationDocumentsDirectory();
+          path = appDocDirectory.path +
+              '/DeX/' +
+              new DateTime.now().millisecondsSinceEpoch.toString();
+
+          print("Start recording: $path");
+
+          await AudioRecorder.start(
+              path: path, audioOutputFormat: AudioOutputFormat.AAC);
+
+          bool isRecording = await AudioRecorder.isRecording;
+        } else {
+          Scaffold.of(context).showSnackBar(
+              new SnackBar(content: new Text("You must accept permissions")));
+        }
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      var recording = await AudioRecorder.stop();
+      print("Stop recording: ${recording.path}");
+      File file = new File(recording.path);
+      print("File length: ${await file.length()}");
+
+      //UPLOAD STUFF
+      //GET KEY
+      String uploadAudioFileKey = FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .push()
+          .key;
+
+      //ADD TO THE LIST
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .child(uploadAudioFileKey)
+          .update({
+        "name": recording.path
+            .toString()
+            .substring(recording.path.toString().length - 21),
+        "conversionStatus": 0,
+//      "followUp": followUpStatus,
+        "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
+      });
+
+      print("===>>>list entry created");
+
+      //UPLOAD FILE
+      StorageReference ref = FirebaseStorage.instance
+          .ref()
+          .child("Audio")
+          .child(widget.email.replaceAll(".", " "))
+          .child(recording.path
+              .toString()
+              .substring(recording.path.toString().length - 21));
+      StorageUploadTask uploadTask = ref.put(file);
+
+      //GET URL
+      Uri fileUrl = (await uploadTask.future).downloadUrl;
+      print("File Uploaded == > ${recording.path.toString()}");
+
+      //PUSH TO THE LIST
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("list")
+          .child(widget.email.replaceAll(".", " "))
+          .child(uploadAudioFileKey)
+          .update({
+        "url": fileUrl.toString(),
+      });
+
+      //CREATE A BACKEND REQUEST
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("backend")
+          .child("oneBigListOfEMRRequests")
+          .push()
+          .set({
+        "audioUrl": fileUrl.toString(),
+        "email": widget.email.replaceAll(".", " "),
+        "key": uploadAudioFileKey,
+        "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
+      });
+    }
+  }
+
+  //0 = STOP RECORDING
+  //1 = Start RECORDING
   //2 = PAUSE RECORDING
   //3 = RESUME RECORDING
   //PLATFORM
-  static const platform = const MethodChannel('dex.channels/dfRedButtonState');
+  /*static const platform = const MethodChannel('dex.channels/dfRedButtonState');
 
   //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
   Future redButtonStateChannelFunction(int redButtonState) async {
@@ -316,5 +428,5 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       });
     }
 //    stillUploadingLastOne = 0;
-  }
+  }*/
 }

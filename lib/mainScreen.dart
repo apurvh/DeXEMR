@@ -11,6 +11,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:audio_recorder/audio_recorder.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key key, this.email});
@@ -22,6 +24,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  BuildContext contextForRecorder;
+
   @override
   Widget build(BuildContext context) {
     String _emailID = widget.email;
@@ -40,17 +44,20 @@ class _MainScreenState extends State<MainScreen> {
             )
           ],
         ),
-        body: new Column(
-          children: <Widget>[
-            new ScopedModelDescendant<CounterModel>(
-              builder: (context, child, model) =>
-                  renderRecordWidget(model.counter),
-            ),
-            Expanded(
-              child: new EMRListWidget(email: _emailID),
-            ),
-          ],
-        ),
+        body: new Builder(builder: (BuildContext context) {
+          contextForRecorder = context;
+          return new Column(
+            children: <Widget>[
+              new ScopedModelDescendant<CounterModel>(
+                builder: (context, child, model) =>
+                    renderRecordWidget(model.counter),
+              ),
+              Expanded(
+                child: new EMRListWidget(email: _emailID),
+              ),
+            ],
+          );
+        }),
         floatingActionButton: new ScopedModelDescendant<CounterModel>(
           builder: (context, child, model) => renderFloatingActionButton(model),
         ),
@@ -84,9 +91,7 @@ class _MainScreenState extends State<MainScreen> {
         padding: const EdgeInsets.all(5.0),
         child: new RawMaterialButton(
           onPressed: () {
-            model.increment();
-            print("====>>>>  ${model.counter}");
-            redButtonStateChannelFunction(model.counter);
+            renderFloatingActionButtonFunction(model);
           },
           padding: const EdgeInsets.all(30.0),
           child: new Text(
@@ -105,8 +110,54 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  //PLATFORM
-  static const platform = const MethodChannel('dex.channels/dfRedButtonState');
+  renderFloatingActionButtonFunction(model) async {
+    if (await AudioRecorder.hasPermissions) {
+      model.increment();
+      print("====>>>>  ${model.counter}");
+//            redButtonStateChannelFunction(model.counter);
+      _audioRecorderFunction(model.counter);
+    } else {
+      print("====>>>>NO AUDIO PERMISSIONS");
+    }
+  }
+
+  //0 = STOP RECORDING
+  //1 = Start RECORDING
+  //2 = PAUSE RECORDING
+  //3 = RESUME RECORDING
+  _audioRecorderFunction(int recordState) async {
+    if (recordState == 1) {
+      try {
+        if (await AudioRecorder.hasPermissions) {
+          //CREATE DIRECTORY-Path
+          Directory appDocDirectory = await getApplicationDocumentsDirectory();
+          String path = appDocDirectory.path +
+              '/' +
+              'DeX_' +
+              new DateTime.now().millisecondsSinceEpoch.toString();
+
+          print("Start recording: $path");
+          await AudioRecorder.start(
+              path: path, audioOutputFormat: AudioOutputFormat.AAC);
+
+          bool isRecording = await AudioRecorder.isRecording;
+        } else {
+          Scaffold.of(contextForRecorder).showSnackBar(
+              new SnackBar(content: new Text("You must accept permissions")));
+        }
+      } catch (e) {
+        print(e);
+      }
+    } else {
+      var recording = await AudioRecorder.stop();
+      print("Stop recording: ${recording.path}");
+      File file = new File(recording.path);
+      print("  File length: ${await file.length()}");
+    }
+  }
+
+  //PLATFORM CODE
+/*  static const platform = const MethodChannel('dex.channels/dfRedButtonState');
 
   //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
   Future redButtonStateChannelFunction(int redButtonState) async {
@@ -168,7 +219,7 @@ class _MainScreenState extends State<MainScreen> {
       });
     }
 //    stillUploadingLastOne = 0;
-  }
+  }*/
 }
 
 //THIS MODEL STORES AND PASSES DATA SUCH AS TIME AND STATES OF RECORDER WIDGET AND STOPWATCH
