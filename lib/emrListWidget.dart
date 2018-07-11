@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:dex_for_doctor/emrWidget.dart';
+import 'dart:async';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -23,13 +24,25 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   var referenceToRecords;
 
   @override
-  Widget build(BuildContext context) {
-    print("VALUE OF widget.email:====>  ${widget.email}");
+  void initState() {
+    databaseRedundancy();
     referenceToRecords = FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("list")
         .child(widget.email.replaceAll(".", " "));
+    FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("list")
+        .child(widget.email.replaceAll(".", " "))
+        .keepSynced(true);
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("VALUE OF widget.email:====>  ${widget.email}");
 
     return new Scaffold(
       body: _recordsList(),
@@ -144,5 +157,11 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         color: Colors.grey[400],
       );
     }
+  }
+
+  Future<Null> databaseRedundancy() async {
+    await FirebaseDatabase.instance.setPersistenceEnabled(true);
+    await FirebaseDatabase.instance.setPersistenceCacheSizeBytes(10000000);
+//    FirebaseDatabase.instance.reference().keepSynced(true);
   }
 }

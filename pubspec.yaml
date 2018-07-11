@@ -4,24 +4,23 @@ description: Digital assistant for docs - Doctor App.
 dependencies:
   flutter:
     sdk: flutter
-  image_picker: "^0.3.1"
-  google_sign_in: 3.0.0
-  firebase_analytics: ^0.3.0                                     # new
-  firebase_auth: 0.5.2                                           # new
-  firebase_database: "^0.4.1"                                       # new
-  firebase_storage: "^0.2.0"
-  audioplayer: ^0.3.0
-  path_provider: ^0.4.0
-  flutter_webview_plugin: "^0.1.4"
-  firebase_messaging: "^0.1.4"
+  image_picker: "^0.4.5"
+  google_sign_in: "^3.0.4"
+  firebase_analytics: "^1.0.1"
+  firebase_auth: "^0.5.12"
+  firebase_database: "^1.0.1"
+  firebase_storage: "^1.0.0"
+  audioplayer: "^0.5.0"
+  path_provider: "^0.4.1"
+  flutter_webview_plugin: "^0.1.6"
+  firebase_messaging: "^1.0.3"
   intl: "^0.15.6"
-  flutter_local_notifications: "^0.2.3"
+  flutter_local_notifications: "^0.3.4"
   shared_preferences: "^0.4.2"
   simple_permissions: "^0.1.5"
   share: "^0.5.2"
   scoped_model: "^0.2.0"
   audio_recorder: "^0.0.4"
-
 
 
   # The following adds the Cupertino Icons font to your application.

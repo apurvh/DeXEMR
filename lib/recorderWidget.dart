@@ -330,7 +330,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         "url": fileUrl.toString(),
       });
 
-      //CREATE A BACKEND REQUEST
+      //CREATE A BACKEND REQUEST IN BIG LIST
       await FirebaseDatabase.instance
           .reference()
           .child("DeXAutoCollect")

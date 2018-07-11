@@ -19,20 +19,20 @@ class EMRPage extends StatefulWidget {
 class _EMRPageState extends State<EMRPage> {
   AudioPlayer audioPlayer = new AudioPlayer();
 
+  var referenceToEMR;
   @override
   void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final referenceToEMR = FirebaseDatabase.instance
+    referenceToEMR = FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("EMR")
         .child(widget.email.replaceAll(".", " "))
         .child(widget.patientCode);
+    super.initState();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
         backgroundColor: Colors.teal[800],

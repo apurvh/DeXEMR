@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key key, this.email});
@@ -118,6 +119,9 @@ class _MainScreenState extends State<MainScreen> {
       _audioRecorderFunction(model.counter);
     } else {
       print("====>>>>NO AUDIO PERMISSIONS");
+      await SimplePermissions.requestPermission(Permission.RecordAudio);
+      await SimplePermissions
+          .requestPermission(Permission.WriteExternalStorage);
     }
   }
 
