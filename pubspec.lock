@@ -144,13 +144,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_webview_plugin:
-    dependency: "direct main"
-    description:
-      name: flutter_webview_plugin
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.6"
   front_end:
     dependency: transitive
     description:
@@ -200,13 +193,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.2"
-  image_picker:
-    dependency: "direct main"
-    description:
-      name: image_picker
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.4.5"
   intl:
     dependency: "direct main"
     description:
@@ -340,6 +326,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.29.0+1"
+  scheduled_notifications:
+    dependency: "direct main"
+    description:
+      name: scheduled_notifications
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   scoped_model:
     dependency: "direct main"
     description:

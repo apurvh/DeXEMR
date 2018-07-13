@@ -14,6 +14,7 @@ import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:simple_permissions/simple_permissions.dart';
+import 'package:scheduled_notifications/scheduled_notifications.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key key, this.email});
@@ -250,6 +251,7 @@ class CounterModel extends Model {
 
   void increment() {
     // First, increment the counter
+    _scheduleNotification(1);
     _counter = 1;
     stopWatch.start();
 
@@ -258,12 +260,29 @@ class CounterModel extends Model {
   }
 
   void decrement() {
-    // First, increment the counter
+    _scheduleNotification(0);
     _counter = 0;
     stopWatch.stop();
     stopWatch.reset();
 
     // Then notify all the listeners.
     notifyListeners();
+  }
+}
+
+//THIS SHOWS A WARNING NOTIFICATION IF AUDIO INCREASES BEYOND 40 MINS
+//UPLOADS GREATER THAN 40 MB ARE AUTOMATICALLY BLOCKED
+int notificationId;
+_scheduleNotification(int status) async {
+  if (status == 1) {
+    notificationId = await ScheduledNotifications.scheduleNotification(
+        new DateTime.now()
+            .add(new Duration(minutes: 40))
+            .millisecondsSinceEpoch,
+        "Alert!",
+        "Recording duration has crossed 40 mins.",
+        "Recordings more than 60 mins may not get saved.");
+  } else {
+    await ScheduledNotifications.unscheduleNotification(notificationId);
   }
 }

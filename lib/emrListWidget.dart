@@ -71,7 +71,31 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   }
 
   Widget _recordsListTile(snapshot) {
-    if (snapshot.value["conversionStatus"] == 0) {
+    if (snapshot.value["saveAndTranscribe"] == 0) {
+      return new Column(
+        children: <Widget>[
+          new ListTile(
+              leading: new Icon(
+                Icons.play_arrow,
+                size: 15.0,
+                color: Colors.grey[400],
+              ),
+              title: new Text(
+                snapshot.value["name"].toString().split(".")[0],
+                style: new TextStyle(color: Colors.grey[700], fontSize: 14.0),
+              ),
+              subtitle: new Text(
+                "Saved Audio",
+                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
+              ),
+              trailing: new Text(
+                snapshot.value["dateStamp"].toString().split(" ")[0],
+                style: new TextStyle(color: Colors.grey[600]),
+              )),
+          new Divider(),
+        ],
+      );
+    } else if (snapshot.value["conversionStatus"] == 0) {
       return new Column(
         children: <Widget>[
           new ListTile(

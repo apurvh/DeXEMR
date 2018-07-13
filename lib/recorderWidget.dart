@@ -53,8 +53,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                   builder: (context, child, model) => pauseButton(model),
                 ),
                 new ScopedModelDescendant<CounterModel>(
-                    builder: (context, child, model) =>
-                        timer(model.elapsedTimeMin, model.elapsedTimeSec)),
+                    builder: (context, child, model) => timer(
+                        model.elapsedTimeMin, model.elapsedTimeSec, model)),
                 new Column(
                   children: <Widget>[
                     new ScopedModelDescendant<CounterModel>(
@@ -186,7 +186,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
-  Widget timer(String mins, String secs) {
+  Widget timer(String mins, String secs, model) {
     print("timer drwn!!!!");
 
     //KEEPING VALUE OF STRING LESS THAN 60
@@ -195,7 +195,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String stringSecs = intSecs.toString().padLeft(2, '0');
     //ENDS
 
-    refreshTimer();
+    refreshTimer(int.parse(mins), model);
+
     return new Container(
       decoration: new BoxDecoration(
         shape: BoxShape.circle,
@@ -239,7 +240,20 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     );
   }
 
-  Future refreshTimer() async {
+  Future refreshTimer(int mins, model) async {
+    print(">>>value of timer $mins");
+
+    //function to pause recording after min
+//    if (mins > 0) {
+//      //stop recording
+//      print(">>>Recording stopping");
+//      model.decrement();
+//      _audioRecorderFunction(0, 0);
+//      //create a dialogue box
+//
+//    }
+    //ends here
+
     sleep(const Duration(milliseconds: 1000));
     setState(() {});
   }
@@ -250,13 +264,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         children: <Widget>[
           new RawMaterialButton(
             onPressed: () {
-              pauseButtonState = 1;
+//              pauseButtonState = 1;
               print("PAUSE PRESSED");
 //              redButtonStateChannelFunction(2);
-              _audioRecorderFunction(0, 0);
-
-              model.stopWatchPause();
-              setState(() {});
+//              _audioRecorderFunction(0, 0);
+//
+//              model.stopWatchPause();
+//              setState(() {});
             },
             child: new Icon(
               Icons.pause,
@@ -356,191 +370,123 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       File file = new File(recording.path);
       print("File length: ${await file.length()}");
 
-      //UPLOAD STUFF
-      //GET KEY
-      String uploadAudioFileKey = FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .push()
-          .key;
-
-      //ADD TO THE LIST
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "name": recording.path
-            .toString()
-            .substring(recording.path.toString().length - 21),
-        "conversionStatus": 0,
-//      "followUp": followUpStatus,
-        "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
-      });
-
-      print(">>>>LIST ENTRY CREATED");
-
-      //UPLOAD FILE
-      print(">>>UPLOAGING FILE USING UPLOADTASK");
-      StorageReference ref = FirebaseStorage.instance
-          .ref()
-          .child("Audio")
-          .child(widget.email.replaceAll(".", " "))
-          .child(recording.path
-              .toString()
-              .substring(recording.path.toString().length - 21));
-      StorageUploadTask uploadTask = ref.put(file);
-
-      //GET URL
-      Uri fileUrl = (await uploadTask.future).downloadUrl;
-      print("File Uploaded == > ${recording.path.toString()}");
-
-      //PUSH TO THE LIST
-      print(">>>PUSHING TO EMR LIST");
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "url": fileUrl.toString(),
-      });
-
-      //JUST SAVE COUNTER
-      //TRANSACTION SHOULD BE USED?
-      if (saveAndTranscribe == 0) {
-        int valueCounter = 0;
-
-        await FirebaseDatabase.instance
+      //THIS IF ELSE CHECKS FOR SIZE OF AUDIO
+      //IF GREATER THAN 40MB THEN DON'T UPLOAD AUDIO
+      //CHECK WHETHER THIS IS REALLY 40 MB
+      if (await file.length() > 40000000) {
+        Scaffold.of(context).showSnackBar(
+              new SnackBar(
+                content: new Text(
+                  "Upload Failed! File size greater than 40MB; Please contact support",
+                  style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
+                ),
+                duration: new Duration(seconds: 50),
+              ),
+            );
+      } else {
+        //UPLOAD STUFF
+        //GET KEY
+        String uploadAudioFileKey = FirebaseDatabase.instance
             .reference()
             .child("DeXAutoCollect")
-            .child("backend")
-            .child("saveButtonClickCounter")
+            .child("list")
             .child(widget.email.replaceAll(".", " "))
-            .once()
-            .then((DataSnapshot ds) {
-          if (ds.value != null) {
-            valueCounter = ds.value["valueCounter"];
-          } else {
-            valueCounter = 0;
-          }
-        });
-
-        await FirebaseDatabase.instance
-            .reference()
-            .child("DeXAutoCollect")
-            .child("backend")
-            .child("saveButtonClickCounter")
-            .child(widget.email.replaceAll(".", " "))
-            .update({"valueCounter": valueCounter + 1});
-        print(">>>SAVE COUNTER UPDATED");
-      }
-
-      //CREATE A BACKEND REQUEST IN BIG LIST
-      if (saveAndTranscribe == 1) {
-        print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
-        await FirebaseDatabase.instance
-            .reference()
-            .child("DeXAutoCollect")
-            .child("backend")
-            .child("oneBigListOfEMRRequests")
             .push()
-            .set({
-          "audioUrl": fileUrl.toString(),
-          "email": widget.email.replaceAll(".", " "),
-          "key": uploadAudioFileKey,
-          "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
+            .key;
+
+        //ADD TO THE LIST
+        await FirebaseDatabase.instance
+            .reference()
+            .child("DeXAutoCollect")
+            .child("list")
+            .child(widget.email.replaceAll(".", " "))
+            .child(uploadAudioFileKey)
+            .update({
+          "name": recording.path
+              .toString()
+              .substring(recording.path.toString().length - 21),
+          "conversionStatus": 0,
+//      "followUp": followUpStatus,
+          "saveAndTranscribe": saveAndTranscribe,
+          "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
         });
+
+        print(">>>>LIST ENTRY CREATED");
+
+        //UPLOAD FILE
+        print(">>>UPLOADING FILE USING UPLOADTASK");
+        StorageReference ref = FirebaseStorage.instance
+            .ref()
+            .child("Audio")
+            .child(widget.email.replaceAll(".", " "))
+            .child(recording.path
+                .toString()
+                .substring(recording.path.toString().length - 21));
+        StorageUploadTask uploadTask = ref.put(file);
+
+        //GET URL
+        Uri fileUrl = (await uploadTask.future).downloadUrl;
+        print("File Uploaded == > ${recording.path.toString()}");
+
+        //PUSH TO THE LIST
+        print(">>>PUSHING TO EMR LIST");
+        await FirebaseDatabase.instance
+            .reference()
+            .child("DeXAutoCollect")
+            .child("list")
+            .child(widget.email.replaceAll(".", " "))
+            .child(uploadAudioFileKey)
+            .update({
+          "url": fileUrl.toString(),
+        });
+
+        //JUST SAVE COUNTER
+        //TRANSACTION SHOULD BE USED?
+        if (saveAndTranscribe == 0) {
+          int valueCounter = 0;
+
+          await FirebaseDatabase.instance
+              .reference()
+              .child("DeXAutoCollect")
+              .child("backend")
+              .child("saveButtonClickCounter")
+              .child(widget.email.replaceAll(".", " "))
+              .once()
+              .then((DataSnapshot ds) {
+            if (ds.value != null) {
+              valueCounter = ds.value["valueCounter"];
+            } else {
+              valueCounter = 0;
+            }
+          });
+
+          await FirebaseDatabase.instance
+              .reference()
+              .child("DeXAutoCollect")
+              .child("backend")
+              .child("saveButtonClickCounter")
+              .child(widget.email.replaceAll(".", " "))
+              .update({"valueCounter": valueCounter + 1});
+          print(">>>SAVE COUNTER UPDATED");
+        }
+
+        //CREATE A BACKEND REQUEST IN BIG LIST
+        if (saveAndTranscribe == 1) {
+          print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
+          await FirebaseDatabase.instance
+              .reference()
+              .child("DeXAutoCollect")
+              .child("backend")
+              .child("oneBigListOfEMRRequests")
+              .push()
+              .set({
+            "audioUrl": fileUrl.toString(),
+            "email": widget.email.replaceAll(".", " "),
+            "key": uploadAudioFileKey,
+            "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
+          });
+        }
       }
     }
   }
-
-  //0 = STOP RECORDING
-  //1 = Start RECORDING
-  //2 = PAUSE RECORDING
-  //3 = RESUME RECORDING
-  //PLATFORM
-  /*static const platform = const MethodChannel('dex.channels/dfRedButtonState');
-
-  //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
-  Future redButtonStateChannelFunction(int redButtonState) async {
-    String result = await platform.invokeMethod('stateReply', {
-      'redButtonState': redButtonState,
-      'time': new DateTime.now().millisecondsSinceEpoch.toString()
-    });
-    print("RESULT IS: " + result);
-
-//    stillUploadingLastOne = 1;
-//    print(uploadAudioFileKey);
-
-    //UPLOAD FILE AND PUSH FILE
-    if (result != "Recording On ") {
-      //GET KEY
-      String uploadAudioFileKey = FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .push()
-          .key;
-
-      //ADD TO THE LIST
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "name": result.substring(result.length - 21),
-        "conversionStatus": 0,
-//      "followUp": followUpStatus,
-        "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
-      });
-
-      //UPLOAD FILE
-      File file = new File(result);
-      StorageReference ref = FirebaseStorage.instance
-          .ref()
-          .child("Audio")
-          .child(widget.email.replaceAll(".", " "))
-          .child(result.substring(result.length - 21));
-      StorageUploadTask uploadTask = ref.put(file);
-
-      //GET URL
-      Uri fileUrl = (await uploadTask.future).downloadUrl;
-      print("File Uploaded == > $result");
-
-      //PUSH TO THE LIST
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "url": fileUrl.toString(),
-      });
-
-      //CREATE A BACKEND REQUEST
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("backend")
-          .child("oneBigListOfEMRRequests")
-          .push()
-          .set({
-        "audioUrl": fileUrl.toString(),
-        "email": widget.email.replaceAll(".", " "),
-        "key": uploadAudioFileKey,
-        "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
-      });
-    }
-//    stillUploadingLastOne = 0;
-  }*/
 }
