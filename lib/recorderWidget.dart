@@ -243,17 +243,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   Future refreshTimer(int mins, model) async {
     print(">>>value of timer $mins");
 
-    //function to pause recording after min
-//    if (mins > 0) {
-//      //stop recording
-//      print(">>>Recording stopping");
-//      model.decrement();
-//      _audioRecorderFunction(0, 0);
-//      //create a dialogue box
-//
-//    }
-    //ends here
-
     sleep(const Duration(milliseconds: 1000));
     setState(() {});
   }
