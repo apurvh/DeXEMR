@@ -95,6 +95,30 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           new Divider(),
         ],
       );
+    } else if (snapshot.value["saveAndTranscribe"] == 1) {
+      return new Column(
+        children: <Widget>[
+          new ListTile(
+              leading: new Icon(
+                Icons.play_arrow,
+                size: 15.0,
+                color: Colors.grey[400],
+              ),
+              title: new Text(
+                snapshot.value["newName"].toString(),
+                style: new TextStyle(color: Colors.grey[800], fontSize: 14.0),
+              ),
+              subtitle: new Text(
+                "Saved Audio",
+                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
+              ),
+              trailing: new Text(
+                snapshot.value["dateStamp"].toString().split(" ")[0],
+                style: new TextStyle(color: Colors.grey[600]),
+              )),
+          new Divider(),
+        ],
+      );
     } else if (snapshot.value["conversionStatus"] == 0) {
       return new Column(
         children: <Widget>[
@@ -127,7 +151,9 @@ class _EMRListWidgetState extends State<EMRListWidget> {
             title: new Text(
               snapshot.value["newName"],
               style: new TextStyle(
-                  color: Colors.grey[900], fontWeight: FontWeight.bold),
+                  color: Colors.grey[900],
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0),
             ),
             subtitle: new Text(
               snapshot.value["phone"].toString(),
