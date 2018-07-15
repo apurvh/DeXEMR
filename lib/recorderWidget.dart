@@ -457,6 +457,20 @@ class _RecorderWidgetState extends State<RecorderWidget> {
               .child(widget.email.replaceAll(".", " "))
               .update({"valueCounter": valueCounter + 1});
           print(">>>SAVE COUNTER UPDATED");
+          await FirebaseDatabase.instance
+              .reference()
+              .child("DeXAutoCollect")
+              .child("backend")
+              .child("oneBigListOfEMRRequests")
+              .push()
+              .set({
+            "audioUrl": fileUrl.toString(),
+            "email": widget.email.replaceAll(".", " "),
+            "status": 45,
+            "key": uploadAudioFileKey,
+            "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
+          });
+          print(">>>SENT TO BIG LIST WITH STATUS 45");
         }
 
         //CREATE A BACKEND REQUEST IN BIG LIST
