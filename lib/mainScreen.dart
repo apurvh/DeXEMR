@@ -116,7 +116,6 @@ class _MainScreenState extends State<MainScreen> {
     if (await AudioRecorder.hasPermissions) {
       model.increment();
       print("====>>>>  ${model.counter}");
-//            redButtonStateChannelFunction(model.counter);
       _audioRecorderFunction(model.counter);
     } else {
       print("====>>>>NO AUDIO PERMISSIONS");
@@ -161,70 +160,28 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  //PLATFORM CODE
-/*  static const platform = const MethodChannel('dex.channels/dfRedButtonState');
-
-  //USING PLATFORM CHANNEL TO CAPTURE AUDIO AND SEND TO FIRE BASE DB
-  Future redButtonStateChannelFunction(int redButtonState) async {
-    String result = await platform.invokeMethod('stateReply', {
-      'redButtonState': redButtonState,
-      'time': new DateTime.now().millisecondsSinceEpoch.toString()
-    });
-    print("RESULT IS: " + result);
-
-//    stillUploadingLastOne = 1;
-
-    //UPLOAD FILE AND PUSH FILE
-    if (result != "Recording On ") {
-      //GET KEY
-      String uploadAudioFileKey = FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .push()
-          .key;
-
-//    print(uploadAudioFileKey);
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "name": result.substring(result.length - 21),
-        "conversionStatus": 0,
-//      "followUp": followUpStatus,
-        "dateStamp": new DateFormat.yMd().format(new DateTime.now())
-      });
-
-      //UPLOAD FILE
-      File file = new File(result);
-      StorageReference ref = FirebaseStorage.instance
-          .ref()
-          .child("Audio")
-          .child(widget.email.replaceAll(".", " "))
-          .child(result.substring(result.length - 21));
-      StorageUploadTask uploadTask = ref.put(file);
-
-      //GET URL
-      Uri fileUrl = (await uploadTask.future).downloadUrl;
-      print("File Uploaded == > $result");
-
-      //PUSH TO AUDIO
-      await FirebaseDatabase.instance
-          .reference()
-          .child("DeXAutoCollect")
-          .child("list")
-          .child(widget.email.replaceAll(".", " "))
-          .child(uploadAudioFileKey)
-          .update({
-        "url": fileUrl.toString(),
-      });
+  Future<Null> ensureLoggedIn() async {
+    print("RUNNING ESURE LOOGED IN");
+    GoogleSignInAccount user = googleSignIn.currentUser;
+    if (user == null) {
+      user = await googleSignIn.signInSilently();
     }
-//    stillUploadingLastOne = 0;
-  }*/
+    if (user == null) {
+      await googleSignIn.signIn();
+    }
+    if (await auth.currentUser() == null) {
+      GoogleSignInAuthentication credentials =
+          await googleSignIn.currentUser.authentication;
+      await auth.signInWithGoogle(
+        idToken: credentials.idToken,
+        accessToken: credentials.accessToken,
+      );
+//      await localStorage.setInt("loginInState", 1);
+//      print("Wrote to shared pref local storage: login State: => 1");
+    }
+    print("ENSURE LOGGED IN SUCCESS: ");
+    setState(() {});
+  }
 }
 
 //THIS MODEL STORES AND PASSES DATA SUCH AS TIME AND STATES OF RECORDER WIDGET AND STOPWATCH
