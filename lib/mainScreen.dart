@@ -122,7 +122,16 @@ class _MainScreenState extends State<MainScreen> {
       await SimplePermissions.requestPermission(Permission.RecordAudio);
       await SimplePermissions
           .requestPermission(Permission.WriteExternalStorage);
+      await phStatePermissionFunc();
     }
+  }
+
+  //PLATFORM CHANNEL TO ASK FOR PHONE STATE PERMISSIONS
+  static const platform =
+      const MethodChannel('dex.channels/phStatePermissions');
+  phStatePermissionFunc() async {
+    String result = await platform.invokeMethod('stateReply');
+    print("RESULT IS: " + result);
   }
 
   //0 = STOP RECORDING

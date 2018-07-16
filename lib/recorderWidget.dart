@@ -10,6 +10,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:phonecallstate/phonecallstate.dart';
+
+enum PhonecallState { incoming, dialing, connected, disconnected, none }
 
 class RecorderWidget extends StatefulWidget {
   const RecorderWidget({Key key, this.email});
@@ -22,6 +25,12 @@ class RecorderWidget extends StatefulWidget {
 
 class _RecorderWidgetState extends State<RecorderWidget> {
   int pauseButtonState = 0;
+
+  @override
+  initState() {
+    super.initState();
+    initPhonecallstate();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -581,5 +590,55 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         }
       }
     }
+  }
+
+  //PHONE PERMISSIONS AND PAUSE DURING PHONE
+  Phonecallstate phonecallstate;
+  PhonecallState phonecallstatus;
+  var phonecallstatuslog;
+
+  initPhonecallstate() async {
+    print("Phonecallstate init");
+
+    phonecallstate = new Phonecallstate();
+    phonecallstatus = PhonecallState.none;
+
+    phonecallstate.setIncomingHandler(() {
+      setState(() {
+        phonecallstatus = PhonecallState.incoming;
+        phonecallstatuslog = phonecallstatuslog.toString() +
+            PhonecallState.incoming.toString() +
+            "\n";
+      });
+    });
+
+    phonecallstate.setDialingHandler(() {
+      setState(() {
+        phonecallstatus = PhonecallState.dialing;
+        phonecallstatuslog = phonecallstatuslog.toString() +
+            PhonecallState.dialing.toString() +
+            "\n";
+      });
+    });
+
+    phonecallstate.setConnectedHandler(() {
+      setState(() {
+        phonecallstatus = PhonecallState.connected;
+        phonecallstatuslog = phonecallstatuslog.toString() +
+            PhonecallState.connected.toString() +
+            "\n";
+      });
+    });
+
+    phonecallstate.setDisconnectedHandler(() {
+      setState(() {
+        phonecallstatus = PhonecallState.disconnected;
+        phonecallstatuslog = phonecallstatuslog.toString() +
+            PhonecallState.disconnected.toString() +
+            "\n";
+      });
+    });
+
+    phonecallstate.setErrorHandler((msg) {});
   }
 }
