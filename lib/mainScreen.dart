@@ -15,6 +15,7 @@ import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
+import 'package:dex_for_doctor/searchF.dart';
 
 var stopWatch = new Stopwatch();
 
@@ -44,7 +45,15 @@ class _MainScreenState extends State<MainScreen> {
           actions: <Widget>[
             new IconButton(
               icon: new Icon(Icons.search),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SearchF(
+                            email: _emailID,
+                          )),
+                );
+              },
             )
           ],
         ),

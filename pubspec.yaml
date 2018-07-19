@@ -23,6 +23,7 @@ dependencies:
   audio_recorder: "^0.0.4"
   scheduled_notifications: "^1.0.0"
   phonecallstate: "^0.0.1"
+  material_search: "^0.2.7"
 
 
 
