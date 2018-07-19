@@ -16,6 +16,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 
+var stopWatch = new Stopwatch();
+
 class MainScreen extends StatefulWidget {
   const MainScreen({Key key, this.email});
 

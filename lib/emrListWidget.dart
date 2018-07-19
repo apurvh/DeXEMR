@@ -70,6 +70,10 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     );
   }
 
+  //saveAndTranscribe = 0 | Transcription is not required
+  //saveAndTranscribe = 2 | Transcription is not required but name is populated
+  //saveAndTranscribe = 1 | Sent for transcription
+
   Widget _recordsListTile(snapshot) {
     if (snapshot.value["saveAndTranscribe"] == 0) {
       return new Column(
@@ -95,7 +99,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           new Divider(),
         ],
       );
-    } else if (snapshot.value["saveAndTranscribe"] == 1) {
+    } else if (snapshot.value["saveAndTranscribe"] == 2) {
       return new Column(
         children: <Widget>[
           new ListTile(

@@ -29,7 +29,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   initState() {
     super.initState();
-    initPhonecallstate();
+    initPhCallState();
   }
 
   @override
@@ -251,7 +251,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
   Future refreshTimer(int mins, model) async {
     print(">>>value of timer $mins");
-
+//    print(">>>>>>ph CALL STATE: " + phonecallstatuslog.toString());
     sleep(const Duration(milliseconds: 1000));
     setState(() {});
   }
@@ -595,47 +595,39 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   //PHONE PERMISSIONS AND PAUSE DURING PHONE
   Phonecallstate phonecallstate;
   PhonecallState phonecallstatus;
-  var phonecallstatuslog;
 
-  initPhonecallstate() async {
+  initPhCallState() async {
     print("Phonecallstate init");
 
     phonecallstate = new Phonecallstate();
     phonecallstatus = PhonecallState.none;
 
-    phonecallstate.setIncomingHandler(() {
+/*    phonecallstate.setIncomingHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.incoming;
-        phonecallstatuslog = phonecallstatuslog.toString() +
-            PhonecallState.incoming.toString() +
-            "\n";
       });
     });
 
     phonecallstate.setDialingHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.dialing;
-        phonecallstatuslog = phonecallstatuslog.toString() +
-            PhonecallState.dialing.toString() +
-            "\n";
+
       });
-    });
+    });*/
 
     phonecallstate.setConnectedHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.connected;
-        phonecallstatuslog = phonecallstatuslog.toString() +
-            PhonecallState.connected.toString() +
-            "\n";
+        _audioRecorderFunction(2, 0); //pause
+        stopWatch.stop();
       });
     });
 
     phonecallstate.setDisconnectedHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.disconnected;
-        phonecallstatuslog = phonecallstatuslog.toString() +
-            PhonecallState.disconnected.toString() +
-            "\n";
+        _audioRecorderFunction(1, 0); //resume
+        stopWatch.start();
       });
     });
 
