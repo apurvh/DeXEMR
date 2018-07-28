@@ -45,5 +45,19 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+        <dict>
+        	<key>CFBundleTypeRole</key>
+        	<string>Editor</string>
+        	<key>CFBundleURLSchemes</key>
+        	<array>
+        		<!-- Copied from GoogleServices-Info.plist key REVERSE_CLIENT_ID -->
+        		<string>com.googleusercontent.apps.668690350208-80vdoso5fa4adcp9i93dh7gv1m0g5aj7</string>
+        	</array>
+        </dict>
+    </array>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Record audio for transcription</string>
 </dict>
 </plist>

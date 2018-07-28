@@ -11,8 +11,7 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:simple_permissions/simple_permissions.dart';
-import 'package:audioplayer/audioplayer.dart';
+//import 'package:simple_permissions/simple_permissions.dart';
 import 'package:share/share.dart';
 
 import 'package:dex_for_doctor/mainScreen.dart';
@@ -108,7 +107,7 @@ class _LoginWidgetState extends State<LoginWidget> {
               new Padding(
                 padding: const EdgeInsets.only(top: 28.0),
                 child: new Text(
-                  "DeX EMR Helps You To Collect Patient Records",
+                  "Collect Patient Records",
                   style: new TextStyle(
                     color: Colors.white,
                     fontSize: 15.0,
@@ -160,7 +159,7 @@ class _LoginWidgetState extends State<LoginWidget> {
         //failed
         googleSilentChecker = 2;
         setState(() {});
-        print("googleSilentCheckerFunction RUN==>2 | NO GOOGLE");
+        print("googleSilentCheckerFunction RUN==>2 | NO GOOGLE ACC");
       } else {
         //success
         googleSilentChecker = 1;

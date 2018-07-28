@@ -305,13 +305,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.1"
-  phonecallstate:
-    dependency: "direct main"
-    description:
-      name: phonecallstate
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.0.1"
   platform:
     dependency: transitive
     description:
@@ -403,13 +396,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.2"
-  simple_permissions:
-    dependency: "direct main"
-    description:
-      name: simple_permissions
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.5"
   sky_engine:
     dependency: transitive
     description: flutter

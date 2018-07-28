@@ -11,9 +11,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
-import 'package:audio_recorder/audio_recorder.dart';
+//import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:simple_permissions/simple_permissions.dart';
+//import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
@@ -124,16 +124,16 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   renderFloatingActionButtonFunction(model) async {
-    if (await AudioRecorder.hasPermissions) {
+    if (true) {  //await AudioRecorder.hasPermissions instead of true
       model.increment();
       print("====>>>>  ${model.counter}");
       _audioRecorderFunction(model.counter);
     } else {
       print("====>>>>NO AUDIO PERMISSIONS");
-      await SimplePermissions.requestPermission(Permission.RecordAudio);
-      await SimplePermissions
-          .requestPermission(Permission.WriteExternalStorage);
-      await phStatePermissionFunc();
+//      await SimplePermissions.requestPermission(Permission.RecordAudio);
+//      await SimplePermissions
+//          .requestPermission(Permission.WriteExternalStorage);
+//      await phStatePermissionFunc();
     }
   }
 
@@ -150,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
   //2 = PAUSE RECORDING
   //3 = RESUME RECORDING
   _audioRecorderFunction(int recordState) async {
-    if (recordState == 1) {
+/*    if (recordState == 1) {
       try {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
@@ -177,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
       print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
       print("  File length: ${await file.length()}");
-    }
+    }*/
   }
 
   Future<Null> ensureLoggedIn() async {

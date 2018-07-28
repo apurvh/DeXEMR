@@ -17,12 +17,12 @@ dependencies:
   intl: "^0.15.6"
   flutter_local_notifications: "^0.3.4"
   shared_preferences: "^0.4.2"
-  simple_permissions: "^0.1.5"
+#  simple_permissions: "^0.1.5"
   share: "^0.5.2"
   scoped_model: "^0.2.0"
   audio_recorder: "^0.0.4"
   scheduled_notifications: "^1.0.0"
-  phonecallstate: "^0.0.1"
+#  phonecallstate: "^0.0.1"
   material_search: "^0.2.7"
 
 

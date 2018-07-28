@@ -119,7 +119,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               trailing: new Text(
                 snapshot.value["dateStamp"].toString().split(" ")[0],
                 style: new TextStyle(color: Colors.grey[600]),
-              )),
+              ),
+          ),
           new Divider(),
         ],
       );
@@ -180,14 +181,14 @@ class _EMRListWidgetState extends State<EMRListWidget> {
               print("Redirected to EMR and patientCode: " + patientCode);
 
               //MATERIAL ROUTE TO EMR
-              Navigator
-                  .of(context)
-                  .push(new MaterialPageRoute(builder: (context) {
-                return new EMRPage(
-                  email: widget.email,
-                  patientCode: patientCode,
-                );
-              }));
+//              Navigator
+//                  .of(context)
+//                  .push(new MaterialPageRoute(builder: (context) {
+//                return new EMRPage(
+//                  email: widget.email,
+//                  patientCode: patientCode,
+//                );
+//              }));
             },
           ),
           new Divider(),

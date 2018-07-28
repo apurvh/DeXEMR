@@ -8,11 +8,11 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:audio_recorder/audio_recorder.dart';
+//import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:phonecallstate/phonecallstate.dart';
+//import 'package:phonecallstate/phonecallstate.dart';
 
-enum PhonecallState { incoming, dialing, connected, disconnected, none }
+//enum PhonecallState { incoming, dialing, connected, disconnected, none }
 
 class RecorderWidget extends StatefulWidget {
   const RecorderWidget({Key key, this.email});
@@ -29,7 +29,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   initState() {
     super.initState();
-    initPhCallState();
+//    initPhCallState();
   }
 
   @override
@@ -338,7 +338,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String path;
     //THIS IS RECORD
     //AND RESUME
-    if (recordState == 1) {
+/*    if (recordState == 1) {
       try {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
@@ -363,9 +363,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       } catch (e) {
         print(e);
       }
-    }
+    }*/
     //THIS IS PAUSE
-    else if (recordState == 2) {
+/*    else if (recordState == 2) {
       //Stopping recording
       var recording = await AudioRecorder.stop();
       print("Stop recording: ${recording.path}");
@@ -402,10 +402,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         print("File Uploaded == > ${recording.path.toString()}");
         uploadAudioURLArray.add(fileUrl.toString());
       }
-    }
+    }*/
     //THIS IS STOP
     //REAL TIME DATABASE IS UPDATED IS HERE
-    else {
+/*    else {
       var recording = await AudioRecorder.stop();
       print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
@@ -589,11 +589,11 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           }
         }
       }
-    }
+    }*/
   }
 
   //PHONE PERMISSIONS AND PAUSE DURING PHONE
-  Phonecallstate phonecallstate;
+/*  Phonecallstate phonecallstate;
   PhonecallState phonecallstatus;
 
   initPhCallState() async {
@@ -602,7 +602,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     phonecallstate = new Phonecallstate();
     phonecallstatus = PhonecallState.none;
 
-/*    phonecallstate.setIncomingHandler(() {
+*//*    phonecallstate.setIncomingHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.incoming;
       });
@@ -613,7 +613,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         phonecallstatus = PhonecallState.dialing;
 
       });
-    });*/
+    });*//*
 
     phonecallstate.setConnectedHandler(() {
       setState(() {
@@ -632,5 +632,5 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     });
 
     phonecallstate.setErrorHandler((msg) {});
-  }
+  }*/
 }
