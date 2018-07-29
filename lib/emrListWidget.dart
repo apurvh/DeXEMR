@@ -153,13 +153,13 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       return new Text('ID-'+document['ti'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
     }
     else if (document['st']==1) {
-      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
     }
     else if (document['st']==2) {
-      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
     }
     else {
-      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
     }
   }
 
