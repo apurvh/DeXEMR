@@ -25,11 +25,6 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   @override
   void initState() {
-    referenceToRecords = FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "));
     getUsid();
     super.initState();
   }
@@ -39,6 +34,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       usid=user.uid;
       print("usid>> ${user.uid}");
     });
+    setState(() {});
   }
 
   @override
@@ -52,11 +48,19 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   //LIST OF PATIENT RECORDS FROM DB
   Widget _recordsList(){
-    return StreamBuilder(
-        stream: Firestore.instance.collection("listP").snapshots(),
-        builder: (context,snapshot){
-            if(!snapshot.hasData)return Center(child: const Text("Loading.."));
-            else if(snapshot.data.documents.length==0)return Center(child: const Text("Empty List | Click +New to Add"));
+    if(usid == null){
+      return Center(child: new Text('loading(uid)...'),);
+    }
+    else{
+      return StreamBuilder(
+          stream: Firestore.instance.collection("listP").where(
+              'usid', isEqualTo: usid).snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData)
+              return Center(child: const Text("Loading.."));
+            else if (snapshot.data.documents.length == 0)
+              return Center(
+                  child: const Text("Empty List | Click +New to Add"));
             else {
               return ListView.builder(
                   itemCount: snapshot.data.documents.length,
@@ -68,8 +72,9 @@ class _EMRListWidgetState extends State<EMRListWidget> {
                   }
               );
             }
-        }
-    );
+          }
+      );
+    }
   }
 
   _buildListEMRItem(context,document,index){
@@ -80,9 +85,9 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     return Column(
       children: <Widget>[
         ListTile(
-          title: new Text('ID-'+document['ti'].toString(),style: TextStyle(fontWeight: FontWeight.bold),),
-          subtitle: new Text('Audio Saved | Processing..'),
-          leading: new Icon(Icons.cloud_queue),
+          title: titleEMRListItem(document),
+          subtitle: subtitleEMRListItem(document),
+          leading: leadingEMRListItem(document),
           trailing: new Text(datStamp.day.toString()+'/'+datStamp.month.toString()+'/'+datStamp.year.toString()),
         ),
         Divider(),
@@ -104,22 +109,58 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   //saveAndTranscribe = 1 | Sent for transcription
 
 
-  //RENDERS COLOR OF TICK IN RECORDS LIST
-  Widget colorOfTick(snapshot) {
-    if (snapshot.value["seen"] == 1) {
+  //RENDERS LEADING
+  Widget leadingEMRListItem(document) {
+    if(document['st']==0){
+      return new Icon(Icons.cloud_queue);
+    }
+    else if (document['st']==1) {
+      return new Icon(Icons.cloud_queue);
+    }
+    else if (document['st']==2) {
+      return new Icon(
+        Icons.done_all,
+        size: 22.0,
+        color: Colors.grey[400],
+      );
+    }
+    else {
       return new Icon(
         Icons.done_all,
         size: 22.0,
         color: Colors.teal[600],
       );
-    } else {
-      return new Icon(
-        Icons.done_all,
-        size: 15.0,
-        color: Colors.grey[400],
-      );
     }
   }
 
+  Widget subtitleEMRListItem(document) {
+    if(document['st']==0){
+      return new Text('Audio Saved | Processing..');
+    }
+    else if (document['st']==1) {
+      return new Text('Audio Saved');
+    }
+    else if (document['st']==2) {
+      return new Text('Transcribed | Verify');
+    }
+    else {
+      return new Text(document['ph'].toString());
+    }
+  }
+
+  Widget titleEMRListItem(document) {
+    if(document['st']==0){
+      return new Text('ID-'+document['ti'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+    }
+    else if (document['st']==1) {
+      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+    }
+    else if (document['st']==2) {
+      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+    }
+    else {
+      return new Text(document['n'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
+    }
+  }
 
 }
