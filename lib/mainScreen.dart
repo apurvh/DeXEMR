@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:dex_for_doctor/recorderWidget.dart';
 import 'package:dex_for_doctor/emrListWidget.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:dex_for_doctor/emrListWidget.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:intl/intl.dart';
+
 import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
+
+
 
 var stopWatch = new Stopwatch();
 

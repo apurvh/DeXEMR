@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:dex_for_doctor/emrWidget.dart';
-import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -21,23 +19,26 @@ class EMRListWidget extends StatefulWidget {
 }
 
 class _EMRListWidgetState extends State<EMRListWidget> {
+
   var referenceToRecords;
+  String usid;
 
   @override
   void initState() {
-    databaseRedundancy();
     referenceToRecords = FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("list")
         .child(widget.email.replaceAll(".", " "));
-    FirebaseDatabase.instance
-        .reference()
-        .child("DeXAutoCollect")
-        .child("list")
-        .child(widget.email.replaceAll(".", " "))
-        .keepSynced(true);
+    getUsid();
     super.initState();
+  }
+
+  getUsid()async{
+    await auth.currentUser().then((user){
+      usid=user.uid;
+      print("usid>> ${user.uid}");
+    });
   }
 
   @override
@@ -50,152 +51,58 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   }
 
   //LIST OF PATIENT RECORDS FROM DB
-  Widget _recordsList() {
-    return new Column(
+  Widget _recordsList(){
+    return StreamBuilder(
+        stream: Firestore.instance.collection("listP").snapshots(),
+        builder: (context,snapshot){
+            if(!snapshot.hasData)return Center(child: const Text("Loading.."));
+            else if(snapshot.data.documents.length==0)return Center(child: const Text("Empty List | Click +New to Add"));
+            else {
+              return ListView.builder(
+                  itemCount: snapshot.data.documents.length,
+                  reverse: true,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return _buildListEMRItem(
+                        context, snapshot.data.documents[index], index);
+                  }
+              );
+            }
+        }
+    );
+  }
+
+  _buildListEMRItem(context,document,index){
+    print(">>index $index");
+
+    DateTime datStamp = DateTime.fromMillisecondsSinceEpoch(document['ti']);
+
+    return Column(
       children: <Widget>[
-        new Flexible(
-          child: new FirebaseAnimatedList(
-            query: referenceToRecords,
-            itemBuilder:
-                (_, DataSnapshot snapshot, Animation<double> animation, int i) {
-              return _recordsListTile(snapshot);
-            },
-            sort: (a, b) => b.key.compareTo(a.key),
-            defaultChild: new Center(
-              child: new Text("loading..."),
-            ),
-          ),
+        ListTile(
+          title: new Text('ID-'+document['ti'].toString(),style: TextStyle(fontWeight: FontWeight.bold),),
+          subtitle: new Text('Audio Saved | Processing..'),
+          leading: new Icon(Icons.cloud_queue),
+          trailing: new Text(datStamp.day.toString()+'/'+datStamp.month.toString()+'/'+datStamp.year.toString()),
         ),
+        Divider(),
       ],
     );
   }
 
+//              //MATERIAL ROUTE TO EMR
+//              Navigator
+//                  .of(context)
+//                  .push(new MaterialPageRoute(builder: (context) {
+//                return new EMRPage(
+//                  email: widget.email,
+//                  patientCode: patientCode,
+//                );
+//              }));
+
   //saveAndTranscribe = 0 | Transcription is not required
-  //saveAndTranscribe = 2 | Transcription is not required but name is populated
   //saveAndTranscribe = 1 | Sent for transcription
 
-  Widget _recordsListTile(snapshot) {
-    if (snapshot.value["saveAndTranscribe"] == 0) {
-      return new Column(
-        children: <Widget>[
-          new ListTile(
-              leading: new Icon(
-                Icons.play_arrow,
-                size: 15.0,
-                color: Colors.grey[400],
-              ),
-              title: new Text(
-                snapshot.value["name"].toString().split(".")[0],
-                style: new TextStyle(color: Colors.grey[700], fontSize: 14.0),
-              ),
-              subtitle: new Text(
-                "Saved Audio",
-                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
-              ),
-              trailing: new Text(
-                snapshot.value["dateStamp"].toString().split(" ")[0],
-                style: new TextStyle(color: Colors.grey[600]),
-              )),
-          new Divider(),
-        ],
-      );
-    } else if (snapshot.value["saveAndTranscribe"] == 2) {
-      return new Column(
-        children: <Widget>[
-          new ListTile(
-              leading: new Icon(
-                Icons.play_arrow,
-                size: 15.0,
-                color: Colors.grey[400],
-              ),
-              title: new Text(
-                snapshot.value["newName"].toString(),
-                style: new TextStyle(color: Colors.grey[800], fontSize: 14.0),
-              ),
-              subtitle: new Text(
-                "Saved Audio",
-                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
-              ),
-              trailing: new Text(
-                snapshot.value["dateStamp"].toString().split(" ")[0],
-                style: new TextStyle(color: Colors.grey[600]),
-              ),
-          ),
-          new Divider(),
-        ],
-      );
-    } else if (snapshot.value["conversionStatus"] == 0) {
-      return new Column(
-        children: <Widget>[
-          new ListTile(
-              leading: new Icon(
-                Icons.cached,
-                size: 15.0,
-                color: Colors.grey[400],
-              ),
-              title: new Text(
-                snapshot.value["name"].toString().split(".")[0],
-                style: new TextStyle(color: Colors.grey[700], fontSize: 14.0),
-              ),
-              subtitle: new Text(
-                "Processing...",
-                style: new TextStyle(color: Colors.grey[600], fontSize: 12.0),
-              ),
-              trailing: new Text(
-                snapshot.value["dateStamp"].toString().split(" ")[0],
-                style: new TextStyle(color: Colors.grey[600]),
-              )),
-          new Divider(),
-        ],
-      );
-    } else {
-      return new Column(
-        children: <Widget>[
-          new ListTile(
-            leading: colorOfTick(snapshot),
-            title: new Text(
-              snapshot.value["newName"],
-              style: new TextStyle(
-                  color: Colors.grey[900],
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.0),
-            ),
-            subtitle: new Text(
-              snapshot.value["phone"].toString(),
-              style: new TextStyle(color: Colors.grey[900], fontSize: 12.0),
-            ),
-            trailing: new Text(
-              snapshot.value["dateStamp"].toString().split(" ")[0],
-              style: new TextStyle(color: Colors.grey[800]),
-            ),
-            onTap: () {
-              //GET KEY AND PASS IT
-              String patientKey = snapshot.key;
-              print("patientKey: " + patientKey);
-              referenceToRecords.child(patientKey).update({"seen": 1});
-
-              //SET PATIENT CODE WHICH IS USED TO LOAD PATIENT EMR
-              String patientCode = snapshot.value["newName"] +
-                  "-" +
-                  snapshot.value["phone"].toString();
-              print("Redirected to EMR and patientCode: " + patientCode);
-
-              //MATERIAL ROUTE TO EMR
-              Navigator
-                  .of(context)
-                  .push(new MaterialPageRoute(builder: (context) {
-                return new EMRPage(
-                  email: widget.email,
-                  patientCode: patientCode,
-                );
-              }));
-            },
-          ),
-          new Divider(),
-        ],
-      );
-    }
-  }
 
   //RENDERS COLOR OF TICK IN RECORDS LIST
   Widget colorOfTick(snapshot) {
@@ -214,9 +121,5 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     }
   }
 
-  Future<Null> databaseRedundancy() async {
-    await FirebaseDatabase.instance.setPersistenceEnabled(true);
-    await FirebaseDatabase.instance.setPersistenceCacheSizeBytes(10000000);
-//    FirebaseDatabase.instance.reference().keepSynced(true);
-  }
+
 }

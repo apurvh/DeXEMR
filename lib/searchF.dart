@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_search/material_search.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'dart:async';
 import 'package:dex_for_doctor/emrWidget.dart';
 
 class SearchF extends StatefulWidget {

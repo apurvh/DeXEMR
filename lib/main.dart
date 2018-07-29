@@ -1,18 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import 'dart:io';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:simple_permissions/simple_permissions.dart';
-import 'package:share/share.dart';
 
 import 'package:dex_for_doctor/mainScreen.dart';
 

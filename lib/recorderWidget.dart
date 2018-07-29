@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:dex_for_doctor/mainScreen.dart';
+import 'package:dex_for_doctor/main.dart';
+
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -82,14 +84,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                               } else {
                                 model.decrement();
                                 print("====>>>>  ${model.counter}");
-//                            redButtonStateChannelFunction(model.counter);
                                 _audioRecorderFunction(model.counter, 0);
 
                                 Scaffold.of(context).showSnackBar(new SnackBar(
                                       content: new Text(
                                         "Uploading Audio File ...",
                                       ),
-                                      duration: new Duration(seconds: 4),
+                                      duration: new Duration(seconds: 8),
                                     ));
                               }
                             },
@@ -139,7 +140,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                             onPressed: () {
                               print(">>>>>> SAVE AND SEND TO TRANSCRIPTION");
                               //for paused state
-                              //only for sdk < 24 to support that resume pause thing
                               if (pauseButtonState == 1) {
                                 Scaffold.of(context).showSnackBar(new SnackBar(
                                       content: new Text(
@@ -150,14 +150,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                               } else {
                                 model.decrement();
                                 print("====>>>>  ${model.counter}");
-//                            redButtonStateChannelFunction(model.counter);
                                 _audioRecorderFunction(model.counter, 1);
 
                                 Scaffold.of(context).showSnackBar(new SnackBar(
                                       content: new Text(
                                         "Uploading Audio File ...& Sending to Transcription",
                                       ),
-                                      duration: new Duration(seconds: 4),
+                                      duration: new Duration(seconds: 8),
                                     ));
                               }
                             },
@@ -355,7 +354,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           await AudioRecorder.start(
               path: path, audioOutputFormat: AudioOutputFormat.AAC);
 
-          bool isRecording = await AudioRecorder.isRecording;
+//          bool isRecording = await AudioRecorder.isRecording;
         } else {
           Scaffold.of(context).showSnackBar(
               new SnackBar(content: new Text("You must accept permissions")));
@@ -364,244 +363,163 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         print(e);
       }
     }
-    //THIS IS PAUSE
+    //THIS IS PAUSE | Stopping recording
     else if (recordState == 2) {
-      //Stopping recording
+
       var recording = await AudioRecorder.stop();
-      print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
-      print("File length: ${await file.length()}");
+      print("Stop recording: ${recording.path} | File length: ${await file.length()}");
 
-      //THIS IF ELSE CHECKS FOR SIZE OF AUDIO
-      //IF GREATER THAN 40MB THEN DON'T UPLOAD AUDIO
-      //CHECK WHETHER THIS IS REALLY 40 MB
+      //UPLOAD FAILS IF FILES SIZE > 40MB
       if (await file.length() > 40000000) {
-        Scaffold.of(context).showSnackBar(
-              new SnackBar(
-                content: new Text(
-                  "Upload Failed! File size greater than 40MB; Please contact support",
-                  style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
-                ),
-                duration: new Duration(seconds: 50),
-              ),
-            );
-      } else {
-        //UPLOAD FILE
-        print(">>>UPLOADING FILE USING UPLOADTASK");
-        StorageReference ref = FirebaseStorage.instance
-            .ref()
-            .child("Audio")
-            .child(widget.email.replaceAll(".", " "))
-            .child(recording.path
-                .toString()
-                .substring(recording.path.toString().length - 21));
-        StorageUploadTask uploadTask = ref.put(file);
 
-        //GET URL
-        Uri fileUrl = (await uploadTask.future).downloadUrl;
-        print("File Uploaded == > ${recording.path.toString()}");
-        uploadAudioURLArray.add(fileUrl.toString());
+        snackbarOverSizeWarn(context);
+
+      } else {
+
+        await fileUploadStorage(file, recording);
+
       }
     }
-    //THIS IS STOP
-    //REAL TIME DATABASE IS UPDATED IS HERE
+    //THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
       var recording = await AudioRecorder.stop();
-      print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
-      print("File length: ${await file.length()}");
+      print("Stop recording: ${recording.path} | File length: ${await file.length()}");
 
-      //THIS IF ELSE CHECKS FOR SIZE OF AUDIO
-      //IF GREATER THAN 40MB THEN DON'T UPLOAD AUDIO
-      //CHECK WHETHER THIS IS REALLY 40 MB
+      //UPLOAD FAILS IF FILES SIZE > 40MB
       if (await file.length() > 40000000) {
-        Scaffold.of(context).showSnackBar(
-              new SnackBar(
-                content: new Text(
-                  "Upload Failed! File size greater than 40MB; Please contact support",
-                  style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
-                ),
-                duration: new Duration(seconds: 50),
-              ),
-            );
+
+        snackbarOverSizeWarn(context);
+
       } else {
-        //UPLOAD STUFF
-        //UPLOAD FILE
-        print(">>>UPLOADING FILE USING UPLOADTASK");
-        StorageReference ref = FirebaseStorage.instance
-            .ref()
-            .child("Audio")
-            .child(widget.email.replaceAll(".", " "))
-            .child(recording.path
-                .toString()
-                .substring(recording.path.toString().length - 21));
-        StorageUploadTask uploadTask = ref.put(file);
 
-        //GET URL
-        Uri fileUrl = (await uploadTask.future).downloadUrl;
-        print("File Uploaded == > ${recording.path.toString()}");
+        await fileUploadStorage(file, recording);
+        await bigListRequestEntry(saveAndTranscribe);
+        await listPEntry(saveAndTranscribe);
 
-        uploadAudioURLArray.add(fileUrl.toString());
-        print(
-            ">>>FILE UPLOADING COMPLETE | Url array holdings: $uploadAudioURLArray");
-
-        //GET KEY
-        String uploadAudioFileKey = FirebaseDatabase.instance
-            .reference()
-            .child("DeXAutoCollect")
-            .child("list")
-            .child(widget.email.replaceAll(".", " "))
-            .push()
-            .key;
-
-        //UPLOAD BASICS TO LIST
-        await FirebaseDatabase.instance
-            .reference()
-            .child("DeXAutoCollect")
-            .child("list")
-            .child(widget.email.replaceAll(".", " "))
-            .child(uploadAudioFileKey)
-            .update({
-          "name": recording.path
-              .toString()
-              .substring(recording.path.toString().length - 21),
-          "conversionStatus": 0,
-          "saveAndTranscribe": saveAndTranscribe,
-          "dateStamp": new DateFormat.yMd().add_jm().format(new DateTime.now())
-        });
-        print(">>>>LIST ENTRY CREATED");
-
-        //ADD AUDIOS TO THE LIST
-        for (int k = 0; k < uploadAudioURLArray.length; k++) {
-          print("Uploading: $k ${uploadAudioURLArray[k]}");
-          await FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("list")
-              .child(widget.email.replaceAll(".", " "))
-              .child(uploadAudioFileKey)
-              .update({"audioURL-" + k.toString(): uploadAudioURLArray[k]});
-        }
-
-        //JUST SAVE COUNTER
-        if (saveAndTranscribe == 0) {
-          int valueCounter = 0;
-          await FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("saveButtonClickCounter")
-              .child(widget.email.replaceAll(".", " "))
-              .once()
-              .then((DataSnapshot ds) {
-            if (ds.value != null) {
-              valueCounter = ds.value["valueCounter"];
-            } else {
-              valueCounter = 0;
-            }
-          });
-          await FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("saveButtonClickCounter")
-              .child(widget.email.replaceAll(".", " "))
-              .update({"valueCounter": valueCounter + 1});
-          print(">>>SAVE COUNTER UPDATED");
-
-          //GET KEY for BIG LIST
-          String keyForBigList = FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("oneBigListOfEMRRequests")
-              .push()
-              .key;
-          await FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("oneBigListOfEMRRequests")
-              .child(keyForBigList)
-              .set({
-            "email": widget.email.replaceAll(".", " "),
-            "key": uploadAudioFileKey,
-            "status": 45,
-            "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
-          });
-          //ADD AUDIOS TO THE LIST
-          for (int k = 0; k < uploadAudioURLArray.length; k++) {
-            print("Uploading: $k ${uploadAudioURLArray[k]}");
-            await FirebaseDatabase.instance
-                .reference()
-                .child("DeXAutoCollect")
-                .child("backend")
-                .child("oneBigListOfEMRRequests")
-                .child(keyForBigList)
-                .update({
-              "audioURL-" + k.toString(): uploadAudioURLArray[k],
-              "email": widget.email.replaceAll(".", " "),
-              "key": uploadAudioFileKey,
-              "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
-            });
-          }
-          print(">>>SENT TO BIG LIST WITH STATUS 45");
-        }
-
-        //CREATE A BACKEND REQUEST IN BIG LIST
-        if (saveAndTranscribe == 1) {
-          print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
-          //GET KEY for BIG LIST
-          String keyForBigList = FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("oneBigListOfEMRRequests")
-              .push()
-              .key;
-          await FirebaseDatabase.instance
-              .reference()
-              .child("DeXAutoCollect")
-              .child("backend")
-              .child("oneBigListOfEMRRequests")
-              .child(keyForBigList)
-              .set({
-            "email": widget.email.replaceAll(".", " "),
-            "key": uploadAudioFileKey,
-            "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
-          });
-          //ADD AUDIOS TO THE LIST
-          for (int k = 0; k < uploadAudioURLArray.length; k++) {
-            print("Uploading To BIG: $k ${uploadAudioURLArray[k]}");
-            await FirebaseDatabase.instance
-                .reference()
-                .child("DeXAutoCollect")
-                .child("backend")
-                .child("oneBigListOfEMRRequests")
-                .child(keyForBigList)
-                .update({
-              "audioURL-" + k.toString(): uploadAudioURLArray[k],
-              "email": widget.email.replaceAll(".", " "),
-              "key": uploadAudioFileKey,
-              "time": new DateFormat.yMd().add_jm().format(new DateTime.now())
-            });
-          }
-        }
       }
     }
   }
 
+//CREATE A BACKEND REQUEST IN BIG LIST
+//GET KEY for BIG LIST
+//PUSH BASICS
+//ADD AUDIOS TO THE LIST
+//USING BIG LIST WITH FIRE STORE TO KEEP A BACKUP
+Future bigListRequestEntry(saveAndTranscribe) async{
+  print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
+  //GET KEY for BIG LIST
+  String keyForBigList = FirebaseDatabase.instance
+      .reference()
+      .child("DeXAutoCollect")
+      .child("backend")
+      .child("oneBigListOfEMRRequests")
+      .push()
+      .key;
+  //PUSH BASICS
+  await FirebaseDatabase.instance
+      .reference()
+      .child("DeXAutoCollect")
+      .child("backend")
+      .child("backupList")
+      .child(keyForBigList)
+      .set({
+    "em": widget.email.replaceAll(".", " "),
+    "ti": new DateFormat.yMd().add_jm().format(new DateTime.now()),
+    "ty":saveAndTranscribe
+  });
+  //ADD AUDIOS TO THE LIST USING LOOP
+  for (int k = 0; k < uploadAudioURLArray.length; k++) {
+    print("Uploading To BIG: $k ${uploadAudioURLArray[k]}");
+    await FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("backend")
+        .child("backupList")
+        .child(keyForBigList)
+        .update({
+      "audioURL-" + k.toString(): uploadAudioURLArray[k]
+    });
+  }
+}
+
+//UPLOAD TO FIRE BASE STORAGE
+Future fileUploadStorage(file,recording)async{
+  //UPLOAD FILE
+  print(">>>UPLOADING FILE USING UPLOADTASK");
+  StorageReference ref = FirebaseStorage.instance
+      .ref()
+      .child("Audio")
+      .child(widget.email.replaceAll(".", " "))
+      .child(recording.path
+      .toString()
+      .substring(recording.path.toString().length - 21));
+  StorageUploadTask uploadTask = ref.put(file);
+
+  //GET URL
+  Uri fileUrl = (await uploadTask.future).downloadUrl;
+  print("File Uploaded == > ${recording.path.toString()}");
+
+  //ARRAY HOLDS URL TO STORAGE
+  uploadAudioURLArray.add(fileUrl.toString());
+  print(">>>FILE UPLOADED| Url array holdings: $uploadAudioURLArray");
+}
+
+//SNACKBAR WARNING MORE THAN 40 MB
+snackbarOverSizeWarn(context){
+  Scaffold.of(context).showSnackBar(
+    new SnackBar(
+      content: new Text(
+        "Upload Failed! File size greater than 40MB; Please contact support",
+        style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
+      ),
+      duration: new Duration(seconds: 50),
+    ),
+  );
+}
+
+//FIRE STORE listP
+Future listPEntry(saveAndTranscribe)async{
+
+    String usid;
+    await auth.currentUser().then((user){
+      usid=user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    //UPLOAD BASICS
+    String docuId;
+    await Firestore.instance.collection('listP').add({
+//      "em": widget.email.replaceAll(".", " "),
+      "ti": new DateTime.now().millisecondsSinceEpoch,
+      "usid":usid,
+      "ty":saveAndTranscribe,
+      "st":0
+    }).then((val){
+      print(">>key ${val.documentID}");
+      docuId = val.documentID;
+    });
+
+    //UPLOAD AUDIO URLS
+    for (int k = 0; k < uploadAudioURLArray.length; k++) {
+      print("Uploading To listP: $k ${uploadAudioURLArray[k]}");
+      await Firestore.instance.collection('listP').document(docuId).updateData({
+        "a-" + k.toString(): uploadAudioURLArray[k]
+      });
+    }
+}
+
+
   //PHONE PERMISSIONS AND PAUSE DURING PHONE
 /*  Phonecallstate phonecallstate;
   PhonecallState phonecallstatus;
-
   initPhCallState() async {
     print("Phonecallstate init");
 
     phonecallstate = new Phonecallstate();
     phonecallstatus = PhonecallState.none;
 
-*//*    phonecallstate.setIncomingHandler(() {
+     phonecallstate.setIncomingHandler(() {
       setState(() {
         phonecallstatus = PhonecallState.incoming;
       });
@@ -612,7 +530,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         phonecallstatus = PhonecallState.dialing;
 
       });
-    });*//*
+    });
 
     phonecallstate.setConnectedHandler(() {
       setState(() {
