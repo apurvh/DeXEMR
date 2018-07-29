@@ -11,7 +11,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
-//import 'package:audio_recorder/audio_recorder.dart';
+import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
@@ -124,9 +124,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   renderFloatingActionButtonFunction(model) async {
-    if (true) {  //await AudioRecorder.hasPermissions instead of true
+    if (await AudioRecorder.hasPermissions) {  //await AudioRecorder.hasPermissions instead of true
       model.increment();
-      print("====>>>>  ${model.counter}");
+      print("====>>>>  ${model.counter} ==>Started Recording...");
       _audioRecorderFunction(model.counter);
     } else {
       print("====>>>>NO AUDIO PERMISSIONS");
@@ -150,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
   //2 = PAUSE RECORDING
   //3 = RESUME RECORDING
   _audioRecorderFunction(int recordState) async {
-/*    if (recordState == 1) {
+    if (recordState == 1) {
       try {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
@@ -177,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
       print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
       print("  File length: ${await file.length()}");
-    }*/
+    }
   }
 
   Future<Null> ensureLoggedIn() async {

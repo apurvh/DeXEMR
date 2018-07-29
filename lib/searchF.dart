@@ -49,17 +49,17 @@ class _SearchFState extends State<SearchF> {
                 .trim()
                 .contains(new RegExp(r'' + criteria.toLowerCase().trim() + ''));
           },
-//          onSelect:
-//              (dynamic value) =>
-              //MATERIAL ROUTE TO EMR
-//              Navigator
-//                  .of(context)
-//                  .push(new MaterialPageRoute(builder: (context) {
-//                return new EMRPage(
-//                  email: widget.email,
-//                  patientCode: value,
-//                );
-//              })),
+          onSelect:
+              (dynamic value) =>
+//              MATERIAL ROUTE TO EMR
+              Navigator
+                  .of(context)
+                  .push(new MaterialPageRoute(builder: (context) {
+                return new EMRPage(
+                  email: widget.email,
+                  patientCode: value,
+                );
+              })),
         ),
       );
     }

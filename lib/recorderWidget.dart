@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-//import 'package:audio_recorder/audio_recorder.dart';
+import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 //import 'package:phonecallstate/phonecallstate.dart';
 
@@ -338,7 +338,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String path;
     //THIS IS RECORD
     //AND RESUME
-/*    if (recordState == 1) {
+    if (recordState == 1) {
       try {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
@@ -363,9 +363,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       } catch (e) {
         print(e);
       }
-    }*/
+    }
     //THIS IS PAUSE
-/*    else if (recordState == 2) {
+    else if (recordState == 2) {
       //Stopping recording
       var recording = await AudioRecorder.stop();
       print("Stop recording: ${recording.path}");
@@ -402,10 +402,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         print("File Uploaded == > ${recording.path.toString()}");
         uploadAudioURLArray.add(fileUrl.toString());
       }
-    }*/
+    }
     //THIS IS STOP
     //REAL TIME DATABASE IS UPDATED IS HERE
-/*    else {
+    else {
       var recording = await AudioRecorder.stop();
       print("Stop recording: ${recording.path}");
       File file = new File(recording.path);
@@ -484,7 +484,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         }
 
         //JUST SAVE COUNTER
-        //TRANSACTION SHOULD BE USED?
         if (saveAndTranscribe == 0) {
           int valueCounter = 0;
           await FirebaseDatabase.instance
@@ -589,7 +588,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           }
         }
       }
-    }*/
+    }
   }
 
   //PHONE PERMISSIONS AND PAUSE DURING PHONE
