@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+//import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:dex_for_doctor/emrWidget.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -19,19 +22,28 @@ class EMRListWidget extends StatefulWidget {
 }
 
 class _EMRListWidgetState extends State<EMRListWidget> {
-
   var referenceToRecords;
   String usid;
 
   @override
   void initState() {
     getUsid();
+    checkforDirdd();
     super.initState();
   }
 
-  getUsid()async{
-    await auth.currentUser().then((user){
-      usid=user.uid;
+  checkforDirdd() async {
+    print(">>Is this directoty:");
+    Directory appDocDirectory = await getApplicationDocumentsDirectory();
+
+    appDocDirectory.list().toList().then((bbbb) {
+      print(">>>>${bbbb.length} --- $bbbb");
+    });
+  }
+
+  getUsid() async {
+    await auth.currentUser().then((user) {
+      usid = user.uid;
       print("usid>> ${user.uid}");
     });
     setState(() {});
@@ -47,14 +59,17 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   }
 
   //LIST OF PATIENT RECORDS FROM DB
-  Widget _recordsList(){
-    if(usid == null){
-      return Center(child: new Text('loading(uid)...'),);
-    }
-    else{
+  Widget _recordsList() {
+    if (usid == null) {
+      return Center(
+        child: new Text('loading(uid)...'),
+      );
+    } else {
       return StreamBuilder(
-          stream: Firestore.instance.collection("listP").where(
-              'usid', isEqualTo: usid).snapshots(),
+          stream: Firestore.instance
+              .collection("listP")
+              .where('usid', isEqualTo: usid)
+              .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
               return Center(child: const Text("Loading.."));
@@ -69,16 +84,14 @@ class _EMRListWidgetState extends State<EMRListWidget> {
                   itemBuilder: (context, index) {
                     return _buildListEMRItem(
                         context, snapshot.data.documents[index], index);
-                  }
-              );
+                  });
             }
-          }
-      );
+          });
     }
   }
 
-  _buildListEMRItem(context,document,index){
-    print(">>index $index");
+  _buildListEMRItem(context, document, index) {
+//    print(">>index $index");
 
     DateTime datStamp = DateTime.fromMillisecondsSinceEpoch(document['ti']);
 
@@ -88,7 +101,15 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           title: titleEMRListItem(document),
           subtitle: subtitleEMRListItem(document),
           leading: leadingEMRListItem(document),
-          trailing: new Text(datStamp.day.toString()+'/'+datStamp.month.toString()+'/'+datStamp.year.toString()),
+          trailing: new Text(datStamp.day.toString() +
+              '/' +
+              datStamp.month.toString() +
+              '/' +
+              datStamp.year.toString()),
+          onTap: () {
+            //MATERIAL ROUTE TO EMR
+            onTapEMRListItem(document);
+          },
         ),
         Divider(),
       ],
@@ -105,26 +126,27 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 //                );
 //              }));
 
-  //saveAndTranscribe = 0 | Transcription is not required
-  //saveAndTranscribe = 1 | Sent for transcription
+  //saveAndTranscribe = 0 | just save
+  //saveAndTranscribe = 1 | save and transcribe
 
+  //st = 0 | for no conversion
+  //st = 1 | for just name conversion (Unpaid)
+  //st = 2 | for complete conversion
+  //st = 0 | for complete conversion with Read/verified
 
   //RENDERS LEADING
   Widget leadingEMRListItem(document) {
-    if(document['st']==0){
+    if (document['st'] == 0) {
       return new Icon(Icons.cloud_queue);
-    }
-    else if (document['st']==1) {
+    } else if (document['st'] == 1) {
       return new Icon(Icons.cloud_queue);
-    }
-    else if (document['st']==2) {
+    } else if (document['st'] == 2) {
       return new Icon(
         Icons.done_all,
         size: 22.0,
         color: Colors.grey[400],
       );
-    }
-    else {
+    } else {
       return new Icon(
         Icons.done_all,
         size: 22.0,
@@ -134,33 +156,56 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   }
 
   Widget subtitleEMRListItem(document) {
-    if(document['st']==0){
+    if (document['st'] == 0) {
       return new Text('Audio Saved | Processing..');
-    }
-    else if (document['st']==1) {
+    } else if (document['st'] == 1) {
       return new Text('Audio Saved');
-    }
-    else if (document['st']==2) {
+    } else if (document['st'] == 2) {
       return new Text('Transcribed | Verify');
-    }
-    else {
+    } else {
       return new Text(document['ph'].toString());
     }
   }
 
   Widget titleEMRListItem(document) {
-    if(document['st']==0){
-      return new Text('ID-'+document['ti'].toString(),style: TextStyle(fontWeight: FontWeight.bold),);
-    }
-    else if (document['st']==1) {
-      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
-    }
-    else if (document['st']==2) {
-      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
-    }
-    else {
-      return new Text(document['nn']+' '+document['ns'],style: TextStyle(fontWeight: FontWeight.bold),);
+    if (document['st'] == 0) {
+      return new Text(
+        'ID-' + document['ti'].toString(),
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
+    } else if (document['st'] == 1) {
+      return new Text(
+        document['nn'] + ' ' + document['ns'],
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
+    } else if (document['st'] == 2) {
+      return new Text(
+        document['nn'] + ' ' + document['ns'],
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
+    } else {
+      return new Text(
+        document['nn'] + ' ' + document['ns'],
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
     }
   }
 
+  onTapEMRListItem(document) {
+    if (document['st'] == 2 || document['st'] == 3) {
+
+
+
+      Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+        return new EMRPage(
+          name: document['nn'],
+          sname: document['ns'],
+          phnumber: document['ph'],
+          usid: document['usid'],
+        );
+      }));
+    } else {
+      print('>>Empty');
+    }
+  }
 }

@@ -55,8 +55,8 @@ class _SearchFState extends State<SearchF> {
                   .of(context)
                   .push(new MaterialPageRoute(builder: (context) {
                 return new EMRPage(
-                  email: widget.email,
-                  patientCode: value,
+//                  email: widget.email,
+//                  patientCode: value,
                 );
               })),
         ),

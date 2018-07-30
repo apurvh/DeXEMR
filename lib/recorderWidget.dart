@@ -31,6 +31,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   initState() {
     super.initState();
+
 //    initPhCallState();
   }
 
@@ -346,10 +347,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
           path = appDocDirectory.path +
               '/' +
-              'DeX_' +
+              'DeX-' +
               new DateTime.now().millisecondsSinceEpoch.toString();
 
-          print("Start recording: $path");
+          print("Start resumed recording: $path");
 
           await AudioRecorder.start(
               path: path, audioOutputFormat: AudioOutputFormat.AAC);
@@ -394,9 +395,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
       } else {
 
-        await fileUploadStorage(file, recording);
+        await listPEntry(saveAndTranscribe,file, recording);
+
         await bigListRequestEntry(saveAndTranscribe);
-        await listPEntry(saveAndTranscribe);
 
       }
     }
@@ -455,11 +456,31 @@ Future fileUploadStorage(file,recording)async{
       .child(recording.path
       .toString()
       .substring(recording.path.toString().length - 21));
-  StorageUploadTask uploadTask = ref.put(file);
+
+  StorageUploadTask uploadTask = ref.putFile(file);
+
+  await uploadTask.future.catchError((error){
+    //
+    print(">>Error IN UPLOAD"+error);
+  });
+
 
   //GET URL
   Uri fileUrl = (await uploadTask.future).downloadUrl;
+
   print("File Uploaded == > ${recording.path.toString()}");
+
+
+
+  await uploadTask.future.whenComplete((){
+    //delete file
+    file.deleteSync(recursive: true);
+    print(">>File is DELETED");
+  });
+
+//  new Directory('DeX').list().toList().then((bb){
+//    print(">>DIRECTORY $bb");
+//  });
 
   //ARRAY HOLDS URL TO STORAGE
   uploadAudioURLArray.add(fileUrl.toString());
@@ -480,7 +501,7 @@ snackbarOverSizeWarn(context){
 }
 
 //FIRE STORE listP
-Future listPEntry(saveAndTranscribe)async{
+Future listPEntry(saveAndTranscribe,file, recording)async{
 
     String usid;
     await auth.currentUser().then((user){
@@ -499,6 +520,8 @@ Future listPEntry(saveAndTranscribe)async{
       print(">>key ${val.documentID}");
       docuId = val.documentID;
     });
+
+    await fileUploadStorage(file, recording);
 
     //UPLOAD AUDIO URLS
     for (int k = 0; k < uploadAudioURLArray.length; k++) {

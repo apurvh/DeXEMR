@@ -156,14 +156,14 @@ class _MainScreenState extends State<MainScreen> {
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
           String path = appDocDirectory.path +
               '/' +
-              'DeX_' +
+              'DeX-' +
               new DateTime.now().millisecondsSinceEpoch.toString();
 
-          print("Start recording: $path");
+//          print("Start recording: $path");
           await AudioRecorder.start(
               path: path, audioOutputFormat: AudioOutputFormat.AAC);
 
-          bool isRecording = await AudioRecorder.isRecording;
+//          bool isRecording = await AudioRecorder.isRecording;
         } else {
           Scaffold.of(contextForRecorder).showSnackBar(
               new SnackBar(content: new Text("You must accept permissions")));
