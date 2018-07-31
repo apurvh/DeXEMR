@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:dex_for_doctor/emrWidget.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -28,17 +29,74 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   @override
   void initState() {
     getUsid();
-    checkforDirdd();
+    //check for previous upload crash
+    _checkforCrashedAudio();
     super.initState();
   }
 
-  checkforDirdd() async {
-    print(">>Is this directoty:");
+  _checkforCrashedAudio() async {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
-    appDocDirectory.list().toList().then((bbbb) {
-      print(">>>>${bbbb.length} --- $bbbb");
+    bool whetherDeXDirExists = false;
+    await new Directory(appDocDirectory.path+'/'+'DeX')
+        .exists().then((what){
+          whetherDeXDirExists=what;
     });
+    if(whetherDeXDirExists) {
+      new Directory(appDocDirectory.path + '/' + 'DeX')
+          .list(recursive: true)
+          .toList()
+          .then((listOFDirContent) {
+        print("DeX directoty >>>>Length: ${listOFDirContent.length} ---CONTENT: $listOFDirContent");
+        if (listOFDirContent.length > 0) {
+          for (int h = 0; h < listOFDirContent.length; h++) {
+            reUploadCrashedAudio(listOFDirContent[h]);
+//            print(listOFDirContent[0].path.substring(listOFDirContent[0].path.length - 21));
+          }
+        } else {
+          print('>>>No redundant audio');
+          String hodor='/data/user/0/dextechnologies.dexfordoctor/app_flutter/DeX/DeX-1533050241023.m4a';
+          print(hodor.substring(hodor.length-21,hodor.length));
+
+        }
+      });
+    }
+    else{
+      print('>>>No Audio directory yet');
+    }
+  }
+
+  reUploadCrashedAudio(tobeUploadedFile) async{
+    print("Attempting to Upload again: $tobeUploadedFile");
+//    print("Attempting to Upload again: ${tobeUploadedFile
+//        .toString()
+//        .substring(tobeUploadedFile.toString().length - 21)}");
+
+    StorageReference refOfCA = FirebaseStorage.instance
+        .ref()
+        .child("Audio")
+        .child(usid)
+        .child(tobeUploadedFile
+        .toString()
+        .substring(tobeUploadedFile.toString().length - 22,tobeUploadedFile.toString().length-1));
+
+    File rfile = new File(tobeUploadedFile.path);
+    StorageUploadTask uploadTask = refOfCA.putFile(rfile);
+    Uri fileUrl = (await uploadTask.future).downloadUrl;
+
+    //Delete File
+    await uploadTask.future.whenComplete((){
+      print(">>Upload COmplete==> $tobeUploadedFile");
+//      print(tobeUploadedFile
+//          .toString()
+//          .substring(tobeUploadedFile.toString().length - 21,tobeUploadedFile.toString().length));
+//      print(tobeUploadedFile
+//          .toString()
+//          .substring(tobeUploadedFile.toString().length - 22,tobeUploadedFile.toString().length-1));
+//      rfile.deleteSync(recursive: true);
+      print(">>File is DELETED");
+    });
+
   }
 
   getUsid() async {

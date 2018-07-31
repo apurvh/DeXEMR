@@ -15,6 +15,8 @@ import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
 
+List<String> storageRedundancyList = [];
+
 
 var stopWatch = new Stopwatch();
 
@@ -154,10 +156,23 @@ class _MainScreenState extends State<MainScreen> {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
-          String path = appDocDirectory.path +
+
+          //CREATE A DIRECTORY
+          if(!await Directory(appDocDirectory.path+'/DeX').exists()) {
+            await new Directory(appDocDirectory.path + '/DeX').create(
+                recursive: true).then((Directory dir){
+              print('NEW DIR CREATED>>> '+dir.path);
+            });
+          }
+
+          String fileNameT = new DateTime.now().millisecondsSinceEpoch.toString();
+
+          String path = appDocDirectory.path + '/DeX' +
               '/' +
               'DeX-' +
-              new DateTime.now().millisecondsSinceEpoch.toString();
+              fileNameT;
+
+          storageRedundancyList.add(fileNameT);
 
 //          print("Start recording: $path");
           await AudioRecorder.start(

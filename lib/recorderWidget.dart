@@ -40,7 +40,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     if (false) {
       return new Container();
     } else {
-      print("whole Widget drwn!!!!");
+      print("Timer Redrawn==================");
 
       return new Container(
         margin: const EdgeInsets.only(bottom: 4.0),
@@ -196,7 +196,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   Widget timer(String mins, String secs, model) {
-    print("timer drwn!!!!");
+//    print("timer drwn!!!!");
 
     //KEEPING VALUE OF STRING LESS THAN 60
     int intSecs =
@@ -250,7 +250,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   Future refreshTimer(int mins, model) async {
-    print(">>>value of timer $mins");
+//    print(">>>value of timer $mins");
 //    print(">>>>>>ph CALL STATE: " + phonecallstatuslog.toString());
     sleep(const Duration(milliseconds: 1000));
     setState(() {});
@@ -342,13 +342,16 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       try {
         if (await AudioRecorder.hasPermissions) {
           //CREATE DIRECTORY-Path
-          new Directory('DeX');
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
-          path = appDocDirectory.path +
+          String fileNameT = new DateTime.now().millisecondsSinceEpoch.toString();
+
+          path = appDocDirectory.path + '/DeX' +
               '/' +
               'DeX-' +
-              new DateTime.now().millisecondsSinceEpoch.toString();
+              fileNameT;
+
+          storageRedundancyList.add(fileNameT);
 
           print("Start resumed recording: $path");
 
@@ -447,15 +450,22 @@ Future bigListRequestEntry(saveAndTranscribe) async{
 
 //UPLOAD TO FIRE BASE STORAGE
 Future fileUploadStorage(file,recording)async{
+
+  String usid;
+  await auth.currentUser().then((user){
+    usid=user.uid;
+    print("UPLOADING TO LIST P | uid>> ${user.uid}");
+  });
+
   //UPLOAD FILE
   print(">>>UPLOADING FILE USING UPLOADTASK");
   StorageReference ref = FirebaseStorage.instance
       .ref()
       .child("Audio")
-      .child(widget.email.replaceAll(".", " "))
+      .child(usid)
       .child(recording.path
       .toString()
-      .substring(recording.path.toString().length - 21));
+      .substring(recording.path.toString().length - 21,recording.path.toString().length));
 
   StorageUploadTask uploadTask = ref.putFile(file);
 
@@ -471,16 +481,13 @@ Future fileUploadStorage(file,recording)async{
   print("File Uploaded == > ${recording.path.toString()}");
 
 
-
+  //Delete File
   await uploadTask.future.whenComplete((){
     //delete file
     file.deleteSync(recursive: true);
     print(">>File is DELETED");
   });
 
-//  new Directory('DeX').list().toList().then((bb){
-//    print(">>DIRECTORY $bb");
-//  });
 
   //ARRAY HOLDS URL TO STORAGE
   uploadAudioURLArray.add(fileUrl.toString());
@@ -515,11 +522,21 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
       "ti": new DateTime.now().millisecondsSinceEpoch,
       "usid":usid,
       "ty":saveAndTranscribe,
-      "st":0
+      "st":0,
+      "r-d":storageRedundancyList
     }).then((val){
       print(">>key ${val.documentID}");
       docuId = val.documentID;
     });
+
+    //redundancy write
+    //find a better logic
+//    for (int k = 0; k < storageRedundancyList.length; k++) {
+//      print("Uploading storageRedundancyList: $k ${storageRedundancyList[k]}");
+//      await Firestore.instance.collection('listP').document(docuId).updateData({
+//        "a-" + k.toString(): storageRedundancyList[k]
+//      });
+//    }
 
     await fileUploadStorage(file, recording);
 
@@ -530,6 +547,8 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
         "a-" + k.toString(): uploadAudioURLArray[k]
       });
     }
+
+    print(">>ALL DONE WITH");
 }
 
 
