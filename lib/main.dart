@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:simple_permissions/simple_permissions.dart';
 
 import 'package:dex_for_doctor/mainScreen.dart';
 

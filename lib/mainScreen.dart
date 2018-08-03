@@ -10,7 +10,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-//import 'package:simple_permissions/simple_permissions.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
@@ -47,13 +47,13 @@ class _MainScreenState extends State<MainScreen> {
             new IconButton(
               icon: new Icon(Icons.search),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => SearchF(
-                            email: _emailID,
-                          )),
-                );
+//                Navigator.push(
+//                  context,
+//                  MaterialPageRoute(
+//                      builder: (context) => SearchF(
+//                            email: _emailID,
+//                          )),
+//                );
               },
             )
           ],
@@ -131,10 +131,10 @@ class _MainScreenState extends State<MainScreen> {
       _audioRecorderFunction(model.counter);
     } else {
       print("====>>>>NO AUDIO PERMISSIONS");
-//      await SimplePermissions.requestPermission(Permission.RecordAudio);
-//      await SimplePermissions
-//          .requestPermission(Permission.WriteExternalStorage);
-//      await phStatePermissionFunc();
+      await SimplePermissions.requestPermission(Permission.RecordAudio);
+      await SimplePermissions
+          .requestPermission(Permission.WriteExternalStorage);
+      await phStatePermissionFunc();
     }
   }
 

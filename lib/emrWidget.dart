@@ -120,8 +120,9 @@ class _EMRPageState extends State<EMRPage> {
     );
   }
 
+  ///TODO check whther content '' is sufficient
   _emrPageTileRender(heading, content) {
-    if (content == "null"){
+    if (content == "null" || content==''){
       return Container();
     }
     else {

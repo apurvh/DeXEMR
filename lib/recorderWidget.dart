@@ -529,6 +529,9 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
       docuId = val.documentID;
     });
 
+    //CLEAR THE LIST
+    storageRedundancyList.clear();
+    print("Storage Redun: "+storageRedundancyList.toString());
     //redundancy write
     //find a better logic
 //    for (int k = 0; k < storageRedundancyList.length; k++) {
@@ -541,12 +544,13 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
     await fileUploadStorage(file, recording);
 
     //UPLOAD AUDIO URLS
-    for (int k = 0; k < uploadAudioURLArray.length; k++) {
-      print("Uploading To listP: $k ${uploadAudioURLArray[k]}");
-      await Firestore.instance.collection('listP').document(docuId).updateData({
-        "a-" + k.toString(): uploadAudioURLArray[k]
-      });
-    }
+    //NOT UPLOADING AUDIO URLS AS AUDIO CAN BE
+//    for (int k = 0; k < uploadAudioURLArray.length; k++) {
+//      print("Uploading To listP: $k ${uploadAudioURLArray[k]}");
+//      await Firestore.instance.collection('listP').document(docuId).updateData({
+//        "a-" + k.toString(): uploadAudioURLArray[k]
+//      });
+//    }
 
     print(">>ALL DONE WITH");
 }
