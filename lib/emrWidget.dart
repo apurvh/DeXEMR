@@ -76,7 +76,7 @@ class _EMRPageState extends State<EMRPage> {
     String whenn = DateTime
         .fromMillisecondsSinceEpoch(document['ti'])
         .toLocal()
-        .toIso8601String();
+        .toString();
 
     return Expanded(
       child: ListView(
@@ -104,8 +104,8 @@ class _EMRPageState extends State<EMRPage> {
           _emrPageTileRender("Local Examiniation", document['el'].toString()),
           _emrPageTileRender("Diagnosis", document['di'].toString()),
 
-          _emrPageTileRender("Investigations Advised", document['di'].toString()),
-          _emrPageTileRender("Investigations Done", document['di'].toString()),
+          _emrPageTileRender("Investigations Advised", document['ia'].toString()),
+          _emrPageTileRender("Investigations Done", document['id'].toString()),
           _emrPageTileRender("Treatment Plan", document['tp'].toString()),
 
           _emrPageTileRender("Prescription", document['pp'].toString()),

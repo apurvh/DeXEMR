@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dex_for_doctor/recorderWidget.dart';
 import 'package:dex_for_doctor/emrListWidget.dart';
+import 'package:dex_for_doctor/insights.dart';
+
+
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:scoped_model/scoped_model.dart';
@@ -14,9 +17,7 @@ import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
-
 List<String> storageRedundancyList = [];
-
 
 var stopWatch = new Stopwatch();
 
@@ -43,19 +44,31 @@ class _MainScreenState extends State<MainScreen> {
           title: new Text("DeX EMR"),
           elevation: 3.0,
           backgroundColor: Colors.teal[800],
+
           actions: <Widget>[
             new IconButton(
               icon: new Icon(Icons.search),
               onPressed: () {
-//                Navigator.push(
-//                  context,
-//                  MaterialPageRoute(
-//                      builder: (context) => SearchF(
-//                            email: _emailID,
-//                          )),
-//                );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SearchF(
+                            email: _emailID,
+                          )),
+                );
               },
-            )
+            ),
+            RaisedButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+                  return new InsightsData();
+                }));
+              },
+              icon: Icon(Icons.dashboard),
+              label: Text('Insights'),
+              color: Colors.green[700],
+              textColor: Colors.blueGrey[50],
+            ),
           ],
         ),
         body: new Builder(builder: (BuildContext context) {
@@ -125,7 +138,8 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   renderFloatingActionButtonFunction(model) async {
-    if (await AudioRecorder.hasPermissions) {  //await AudioRecorder.hasPermissions instead of true
+    if (await AudioRecorder.hasPermissions) {
+      //await AudioRecorder.hasPermissions instead of true
       model.increment();
       print("====>>>>  ${model.counter} ==>Started Recording...");
       _audioRecorderFunction(model.counter);
@@ -158,19 +172,19 @@ class _MainScreenState extends State<MainScreen> {
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
           //CREATE A DIRECTORY
-          if(!await Directory(appDocDirectory.path+'/DeX').exists()) {
-            await new Directory(appDocDirectory.path + '/DeX').create(
-                recursive: true).then((Directory dir){
-              print('NEW DIR CREATED>>> '+dir.path);
+          if (!await Directory(appDocDirectory.path + '/DeX').exists()) {
+            await new Directory(appDocDirectory.path + '/DeX')
+                .create(recursive: true)
+                .then((Directory dir) {
+              print('NEW DIR CREATED>>> ' + dir.path);
             });
           }
 
-          String fileNameT = new DateTime.now().millisecondsSinceEpoch.toString();
+          String fileNameT =
+              new DateTime.now().millisecondsSinceEpoch.toString();
 
-          String path = appDocDirectory.path + '/DeX' +
-              '/' +
-              'DeX-' +
-              fileNameT;
+          String path =
+              appDocDirectory.path + '/DeX' + '/' + 'DeX-' + fileNameT;
 
           storageRedundancyList.add(fileNameT);
 

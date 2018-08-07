@@ -552,6 +552,17 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
 //      });
 //    }
 
+    String updateSK;
+    int updateSKI;
+    await Firestore.instance.collection('docsP').where('usid',isEqualTo: usid).getDocuments().then((d){
+      updateSKI=d.documents[0]['nre'];
+      updateSK=d.documents[0].documentID;
+    });
+
+    await Firestore.instance.collection('docsP').document(updateSK).updateData({
+        'count': updateSKI+1
+      });
+
     print(">>ALL DONE WITH");
 }
 

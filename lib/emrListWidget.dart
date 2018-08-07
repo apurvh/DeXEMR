@@ -252,8 +252,6 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   onTapEMRListItem(document) {
     if (document['st'] == 2 || document['st'] == 3) {
 
-
-
       Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
         return new EMRPage(
           name: document['nn'],

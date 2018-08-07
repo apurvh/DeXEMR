@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:material_search/material_search.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:dex_for_doctor/emrWidget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dex_for_doctor/emrListWidget.dart';
 
 class SearchF extends StatefulWidget {
   const SearchF({Key key, this.email});
@@ -12,22 +16,230 @@ class SearchF extends StatefulWidget {
 
 class _SearchFState extends State<SearchF> {
   //STATE FOR DATA LOADING
+
   int searchDataLoadScreenState = 0;
 
   String email;
 
+  int whetherSearchedState = 0;
+
+  TextEditingController tname = new TextEditingController();
+  TextEditingController tsname = new TextEditingController();
+  TextEditingController tph = new TextEditingController();
+
   List<String> _names = [];
   List<String> _phone = [];
-  List<String> patientCode = [];
+
+  List<Widget> listArray = [];
+
+  List dattt = [];
+//  List<String> patientCode = [];
 
   @override
   void initState() {
     //load data in string
-    loadingSearchDataFunction();
+//    loadingSearchDataFunction();
     super.initState();
   }
 
   @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: new AppBar(
+        title: Text('Search For Patient'),
+        leading: IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () {
+            print(">>Navigator.pop");
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: Colors.teal[800],
+      ),
+      body: searchBody(),
+    );
+  }
+
+  Widget searchBody() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        searchBodySearchBox(),
+        searchBodyResults(),
+      ],
+    );
+  }
+
+  Widget searchBodySearchBox() {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Type all or anyone of the Individual blanks:\n(Internet connection is Required)',
+            style: TextStyle(color: Colors.teal),
+          ),
+          Divider(),
+//          TextField(
+//            decoration: InputDecoration(
+//              hintText: 'First Name Or',
+//              contentPadding: const EdgeInsets.all(5.0),
+//              border: InputBorder.none,
+//              prefixIcon: Icon(Icons.edit,color: Colors.grey,),
+//            ),
+//            controller: tname,
+//          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 0.0),
+            child: Row(
+              children: <Widget>[
+                Flexible(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Last Name Or',
+                      contentPadding: const EdgeInsets.all(5.0),
+                      border: InputBorder.none,
+                      prefixIcon: Icon(
+                        Icons.edit,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    controller: tsname,
+                  ),
+                ),
+                new RawMaterialButton(
+                  onPressed: () {
+                    print(">>Clicked On Search");
+                    whetherSearchedState = 1;
+                    searchBodySearchBoxFunc();
+                  },
+                  child: new Icon(
+                    Icons.forward,
+                    size: 22.0,
+                    color: Colors.teal,
+                  ),
+                  shape: new CircleBorder(),
+                  elevation: 1.0,
+                  fillColor: Colors.white,
+                  padding: const EdgeInsets.all(10.0),
+                ),
+              ],
+            ),
+          ),
+          TextField(
+            decoration: InputDecoration(
+              hintText: '10 Digit Phone',
+              contentPadding: const EdgeInsets.all(5.0),
+              border: InputBorder.none,
+              prefixIcon: Icon(
+                Icons.edit,
+                color: Colors.grey,
+              ),
+            ),
+            controller: tph,
+            keyboardType: TextInputType.numberWithOptions(),
+          ),
+        ],
+      ),
+      color: Colors.blueGrey[50],
+      padding: const EdgeInsets.all(10.0),
+    );
+  }
+
+  //LOAD THE SEARCH
+  Future searchBodySearchBoxFunc() async {
+    dattt.clear();
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("usid>> ${user.uid}");
+    });
+    //query for phone
+    await Firestore.instance
+        .collection('ptsP')
+        .where('usid', isEqualTo: usid)
+        .where('ph', isEqualTo: tph.text)
+        .getDocuments()
+        .then((docum) {
+      for (int j = 0; j < docum.documents.length; j++) {
+        print('>>docu..data: ${docum.documents[j].data}');
+        dattt.add(docum.documents[j].data);
+      }
+      print(">dattt: $dattt");
+    });
+    //last name
+    await Firestore.instance
+        .collection('ptsP')
+        .where('usid', isEqualTo: usid)
+        .where('ns', isEqualTo: tsname.text)
+        .getDocuments()
+        .then((docum) {
+      for (int j = 0; j < docum.documents.length; j++) {
+        print('>>docu..data: ${docum.documents[j].data}');
+        dattt.add(docum.documents[j].data);
+      }
+      print(">dattt: $dattt");
+    });
+
+    setState(() {
+      whetherSearchedState = 1;
+    });
+
+    FocusScope.of(context).requestFocus(new FocusNode());
+  }
+
+  Widget searchBodyResults() {
+    if (whetherSearchedState == 1) {
+      if (dattt.isEmpty) {
+        return Padding(
+          padding: const EdgeInsets.only(top: 80.0, left: 20.0),
+          child: Text('No Patients Found..\nPlease Retry Or Contact Support'),
+        );
+      } else {
+        createListArray();
+        return Column(
+          children: <Widget>[
+            ListView(shrinkWrap: true, children: listArray),
+          ],
+        );
+      }
+    } else {
+      return Container();
+    }
+  }
+
+  createListArray(){
+    for (int j = 0; j < dattt.length; j++) {
+      listArray.add(
+        Column(
+          children: <Widget>[
+            new ListTile(
+              title: new Text(
+                dattt[j]['nn']+' '+dattt[j]['ns'],
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              leading: Icon(Icons.search),
+              onTap: (){
+                Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+                  return new EMRPage(
+                    name: dattt[j]['nn'],
+                    sname: dattt[j]['ns'],
+                    phnumber: dattt[j]['ph'],
+                    usid: dattt[j]['usid'],
+                  );
+                }));
+              },
+              trailing: Icon(Icons.arrow_forward),
+            ),
+            Divider()
+          ],
+        ),
+      );
+    }
+  }
+
+  //OLD CODE WITH MATERIAL SEARCH
+/*  @override
   Widget build(BuildContext context) {
     if (searchDataLoadScreenState == 0) {
       return loadingDataWidget();
@@ -105,5 +317,5 @@ class _SearchFState extends State<SearchF> {
     });
     searchDataLoadScreenState = 1;
     setState(() {});
-  }
+  }*/
 }
