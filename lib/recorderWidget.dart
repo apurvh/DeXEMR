@@ -560,7 +560,7 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
     });
 
     await Firestore.instance.collection('docsP').document(updateSK).updateData({
-        'count': updateSKI+1
+        'nre': updateSKI+1
       });
 
     print(">>ALL DONE WITH");
