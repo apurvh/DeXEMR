@@ -63,7 +63,7 @@ class _LoginWidgetState extends State<LoginWidget> {
       body: new Container(
         decoration: new BoxDecoration(
           image: new DecorationImage(
-            image: new AssetImage("assets/DeXXX.jpg"),
+            image: new AssetImage("assets/DeXX1.jpg"),
             fit: BoxFit.cover,
           ),
         ),
@@ -72,47 +72,49 @@ class _LoginWidgetState extends State<LoginWidget> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              new Container(
-                child: Padding(
-                  padding: const EdgeInsets.all(60.0),
-                  child: new Text(
-                    "DeX",
-                    style: new TextStyle(
-                      color: Colors.white,
-                      fontSize: 70.0,
-                      fontWeight: FontWeight.bold,
-                      decorationStyle: TextDecorationStyle.double,
-                    ),
-                  ),
-                ),
-                decoration: new BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.transparent,
-                  border: new Border.all(
-                    color: Colors.blueGrey[50],
-                    width: 2.0,
-                  ),
-                ),
-              ),
+//              new Container(
+//                child: Padding(
+//                  padding: const EdgeInsets.all(60.0),
+//                  child: new Text(
+//                    "DeX",
+//                    style: new TextStyle(
+//                      color: Colors.white,
+//                      fontSize: 70.0,
+//                      fontWeight: FontWeight.bold,
+//                      decorationStyle: TextDecorationStyle.double,
+//                    ),
+//                  ),
+//                ),
+//                decoration: new BoxDecoration(
+//                  shape: BoxShape.circle,
+//                  color: Colors.transparent,
+//                  border: new Border.all(
+//                    color: Colors.blueGrey[50],
+//                    width: 2.0,
+//                  ),
+//                ),
+//              ),
+//              new Padding(
+//                padding: const EdgeInsets.only(top: 28.0),
+//                child: new Text(
+//                  "Collect Patient Records",
+//                  style: new TextStyle(
+//                    color: Colors.white,
+//                    fontSize: 20.0,
+//                    fontWeight: FontWeight.normal,
+//                  ),
+//                ),
+//              ),
+//              new Text(
+//                "Simple | Fast | Secure",
+//                style: new TextStyle(
+//                  color: Colors.white,
+//                  fontSize: 20.0,
+//                  fontWeight: FontWeight.normal,
+//                ),
+//              ),
               new Padding(
-                padding: const EdgeInsets.only(top: 28.0),
-                child: new Text(
-                  "Collect Patient Records",
-                  style: new TextStyle(
-                    color: Colors.white,
-                    fontSize: 15.0,
-                  ),
-                ),
-              ),
-              new Text(
-                "Simple | Fast | Secure",
-                style: new TextStyle(
-                  color: Colors.white,
-                  fontSize: 15.0,
-                ),
-              ),
-              new Padding(
-                padding: const EdgeInsets.only(top: 50.0),
+                padding: const EdgeInsets.only(top: 330.0,left: 12.0),
                 child: buttonThatControlsLoginGoogle(),
               ),
             ],
@@ -184,7 +186,7 @@ class _LoginWidgetState extends State<LoginWidget> {
           },
           child: new Image.asset(
             "assets/googleSignIn.png",
-            width: 180.0,
+            width: 200.0,
             fit: BoxFit.cover,
           ),
           padding: const EdgeInsets.all(0.0),

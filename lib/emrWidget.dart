@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+//import 'package:firebase_database/firebase_database.dart';
 import 'package:audioplayer/audioplayer.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
+//import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'dart:async';
-import 'package:share/share.dart';
+//import 'package:share/share.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 //THIS RENDERS EMR
@@ -72,7 +72,12 @@ class _EMRPageState extends State<EMRPage> {
   }
 
   _emrPageRender(context, document) {
-    int aaage = DateTime.now().year - document['dy'];
+
+    int aaage;
+    if(!(document['dy'] == null)){
+      aaage = DateTime.now().year - document['dy'];
+    }
+
     String whenn = DateTime
         .fromMillisecondsSinceEpoch(document['ti'])
         .toLocal()

@@ -16,7 +16,7 @@ dependencies:
   intl: "^0.15.6"
   flutter_local_notifications: "^0.3.4"
   shared_preferences: "^0.4.2"
-  simple_permissions: "^0.1.5"
+#  simple_permissions: "^0.1.5"
   share: "^0.5.2"
   scoped_model: "^0.2.0"
   audio_recorder: "^0.0.4"
@@ -41,14 +41,13 @@ dev_dependencies:
 # The following section is specific to Flutter.
 flutter:
   assets:
-    - assets/drpawanrane.png
     - assets/sounds/ting.mp3
     - assets/DeXSwitchOn.png
     - assets/ajax-loader.gif
     - assets/profileImage.png
     - assets/googleSignIn.png
-    - assets/blinking.gif
-    - assets/DeXXX.jpg
+    - assets/DeXX.jpg
+    - assets/DeXX1.jpg
 
 
   # The following line ensures that the Material Icons font is

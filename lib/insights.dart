@@ -13,12 +13,13 @@ class _InsightsDataState extends State<InsightsData> {
   String savedRecords = '00';
   @override
   void initState() {
-    loadingInsights();
+//    loadingInsights();
     super.initState();
   }
   
   @override
   Widget build(BuildContext context) {
+    loadingInsights();
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(top: 30.0),
@@ -71,17 +72,21 @@ class _InsightsDataState extends State<InsightsData> {
     );
   }
 
+  int setStateOnceogic=0;
   loadingInsights()async{
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
       print("usid>> ${user.uid}");
     });
-    Firestore.instance.collection('docsP').where('usid',isEqualTo: usid).snapshots().listen((data){
+    if(setStateOnceogic==0)
+    Firestore.instance.collection('docsP').where('usid',isEqualTo: usid).getDocuments().then((data){
       savedRecords=data.documents[0]['nre'].toString();
+      print('>>nre FETCHED: $savedRecords');
+      setState(() {
+        setStateOnceogic=1;
+      });
     });
-    setState(() {
-      print('>>Calling SetState $savedRecords');
-    });
+
   }
 }

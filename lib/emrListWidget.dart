@@ -55,8 +55,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           }
         } else {
           print('>>>No redundant audio');
-          String hodor='/data/user/0/dextechnologies.dexfordoctor/app_flutter/DeX/DeX-1533050241023.m4a';
-          print(hodor.substring(hodor.length-21,hodor.length));
+//          String hodor='/data/user/0/dextechnologies.dexfordoctor/app_flutter/DeX/DeX-1533050241023.m4a';
+//          print(hodor.substring(hodor.length-21,hodor.length));
 
         }
       });
@@ -87,13 +87,9 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     //Delete File
     await uploadTask.future.whenComplete((){
       print(">>Upload COmplete==> $tobeUploadedFile");
-//      print(tobeUploadedFile
-//          .toString()
-//          .substring(tobeUploadedFile.toString().length - 21,tobeUploadedFile.toString().length));
-//      print(tobeUploadedFile
-//          .toString()
-//          .substring(tobeUploadedFile.toString().length - 22,tobeUploadedFile.toString().length-1));
-//      rfile.deleteSync(recursive: true);
+
+      rfile.deleteSync(recursive: true);
+
       print(">>File is DELETED");
     });
 
@@ -204,7 +200,10 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         size: 22.0,
         color: Colors.grey[400],
       );
-    } else {
+    } else if (document['st'] == 8) {
+      return new Icon(Icons.cloud_queue);
+    }
+    else {
       return new Icon(
         Icons.done_all,
         size: 22.0,
@@ -220,11 +219,16 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       return new Text('Audio Saved');
     } else if (document['st'] == 2) {
       return new Text('Transcribed | Verify');
-    } else {
+    } else if (document['st'] == 8) {
+      return new Text('Transcribing..');
+    }
+    else {
       return new Text(document['ph'].toString());
     }
   }
 
+
+  //CAREFULL about st having other values
   Widget titleEMRListItem(document) {
     if (document['st'] == 0) {
       return new Text(
@@ -241,7 +245,13 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         document['nn'] + ' ' + document['ns'],
         style: TextStyle(fontWeight: FontWeight.bold),
       );
-    } else {
+    } else if (document['st'] == 8) {
+      return new Text(
+        'ID-' + document['ti'].toString(),
+        style: TextStyle(fontWeight: FontWeight.bold),
+      );
+    }
+    else {
       return new Text(
         document['nn'] + ' ' + document['ns'],
         style: TextStyle(fontWeight: FontWeight.bold),
