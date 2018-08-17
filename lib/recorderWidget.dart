@@ -12,9 +12,10 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:phone_state_i/phone_state_i.dart';
 
-//import 'package:phonecallstate/phonecallstate.dart';
-//enum PhonecallState { incoming, dialing, connected, disconnected, none }
+
+StreamSubscription streamAu;
 
 class RecorderWidget extends StatefulWidget {
   const RecorderWidget({Key key, this.email});
@@ -31,8 +32,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   @override
   initState() {
     super.initState();
-
-//    initPhCallState();
+    initPhCallState();
   }
 
   @override
@@ -65,46 +65,48 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                   builder: (context, child, model) => pauseButton(model),
                 ),
                 new ScopedModelDescendant<CounterModel>(
-                    builder: (context, child, model) => timer(
-                        model.elapsedTimeMin, model.elapsedTimeSec, model)),
+                    builder: (context, child, model) =>
+                        timer(
+                            model.elapsedTimeMin, model.elapsedTimeSec, model)),
                 new Column(
                   children: <Widget>[
                     new ScopedModelDescendant<CounterModel>(
-                      builder: (context, child, model) => new RawMaterialButton(
-                            onPressed: () {
-                              print(">>>>>> jUST SAVE");
-                              //for paused state
-                              //only for sdk < 24 to support that resume pause thing
-                              if (pauseButtonState == 1) {
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text(
-                                        "FIrst Resume -> then Save",
-                                      ),
-                                      duration: new Duration(seconds: 4),
-                                    ));
-                              } else {
-                                model.decrement();
-                                print("====>>>>  ${model.counter}");
-                                _audioRecorderFunction(model.counter, 0);
+                      builder: (context, child, model) =>
+                      new RawMaterialButton(
+                        onPressed: () {
+                          print(">>>>>> jUST SAVE");
+                          //for paused state
+                          //only for sdk < 24 to support that resume pause thing
+                          if (pauseButtonState == 1) {
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                              content: new Text(
+                                "FIrst Resume -> then Save",
+                              ),
+                              duration: new Duration(seconds: 4),
+                            ));
+                          } else {
+                            model.decrement();
+                            print("====>>>>  ${model.counter}");
+                            _audioRecorderFunction(model.counter, 0);
 
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text(
-                                        "Uploading Audio File ...",
-                                      ),
-                                      duration: new Duration(seconds: 8),
-                                    ));
-                              }
-                            },
-                            child: new Icon(
-                              Icons.done,
-                              size: 40.0,
-                              color: Colors.teal[600],
-                            ),
-                            shape: new CircleBorder(),
-                            elevation: 2.0,
-                            fillColor: Colors.white,
-                            padding: const EdgeInsets.all(15.0),
-                          ),
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                              content: new Text(
+                                "Uploading Audio File ...",
+                              ),
+                              duration: new Duration(seconds: 8),
+                            ));
+                          }
+                        },
+                        child: new Icon(
+                          Icons.done,
+                          size: 40.0,
+                          color: Colors.teal[600],
+                        ),
+                        shape: new CircleBorder(),
+                        elevation: 2.0,
+                        fillColor: Colors.white,
+                        padding: const EdgeInsets.all(15.0),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -137,53 +139,54 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                         ]),
                     padding: const EdgeInsets.all(5.0),
                     child: new ScopedModelDescendant<CounterModel>(
-                      builder: (context, child, model) => new RawMaterialButton(
-                            onPressed: () {
-                              print(">>>>>> SAVE AND SEND TO TRANSCRIPTION");
-                              //for paused state
-                              if (pauseButtonState == 1) {
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text(
-                                        "FIrst Resume -> then Save",
-                                      ),
-                                      duration: new Duration(seconds: 4),
-                                    ));
-                              } else {
-                                model.decrement();
-                                print("====>>>>  ${model.counter}");
-                                _audioRecorderFunction(model.counter, 1);
+                      builder: (context, child, model) =>
+                      new RawMaterialButton(
+                        onPressed: () {
+                          print(">>>>>> SAVE AND SEND TO TRANSCRIPTION");
+                          //for paused state
+                          if (pauseButtonState == 1) {
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                              content: new Text(
+                                "FIrst Resume -> then Save",
+                              ),
+                              duration: new Duration(seconds: 4),
+                            ));
+                          } else {
+                            model.decrement();
+                            print("====>>>>  ${model.counter}");
+                            _audioRecorderFunction(model.counter, 1);
 
-                                Scaffold.of(context).showSnackBar(new SnackBar(
-                                      content: new Text(
-                                        "Uploading Audio File ...& Sending to Transcription",
-                                      ),
-                                      duration: new Duration(seconds: 8),
-                                    ));
-                              }
-                            },
-                            padding: const EdgeInsets.all(30.0),
-                            child: Column(
-                              children: <Widget>[
-                                new Icon(
-                                  Icons.done_all,
-                                  size: 60.0,
-                                  color: Colors.teal[500],
-                                ),
-                                new Text(
-                                  "Save & \nTranscribe",
-                                  style: new TextStyle(
-                                    color: Colors.teal[500],
-                                    fontSize: 13.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                            Scaffold.of(context).showSnackBar(new SnackBar(
+                              content: new Text(
+                                "Uploading Audio File ...& Sending to Transcription",
+                              ),
+                              duration: new Duration(seconds: 8),
+                            ));
+                          }
+                        },
+                        padding: const EdgeInsets.all(30.0),
+                        child: Column(
+                          children: <Widget>[
+                            new Icon(
+                              Icons.done_all,
+                              size: 60.0,
+                              color: Colors.teal[500],
                             ),
-                            shape: new CircleBorder(),
-                            elevation: 1.0,
-                            fillColor: Colors.grey[100],
-                          ),
+                            new Text(
+                              "Save & \nTranscribe",
+                              style: new TextStyle(
+                                color: Colors.teal[500],
+                                fontSize: 13.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                        shape: new CircleBorder(),
+                        elevation: 1.0,
+                        fillColor: Colors.grey[100],
+                      ),
                     ),
                   )
                 ],
@@ -334,6 +337,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   //saveAndTranscribe=0; just save
   //saveAndTranscribe=1; save and transcribe
   List<String> uploadAudioURLArray = [];
+
   _audioRecorderFunction(int recordState, int saveAndTranscribe) async {
     String path;
     //THIS IS RECORD
@@ -344,7 +348,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
-          String fileNameT = new DateTime.now().millisecondsSinceEpoch.toString();
+          String fileNameT = new DateTime.now().millisecondsSinceEpoch
+              .toString();
 
           path = appDocDirectory.path + '/DeX' +
               '/' +
@@ -369,40 +374,38 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
     //THIS IS PAUSE | Stopping recording
     else if (recordState == 2) {
-
       var recording = await AudioRecorder.stop();
       File file = new File(recording.path);
-      print("Stop recording: ${recording.path} | File length: ${await file.length()}");
+      print("Stop recording: ${recording.path} | File length: ${await file
+          .length()}");
 
       //UPLOAD FAILS IF FILES SIZE > 40MB
       if (await file.length() > 40000000) {
-
         snackbarOverSizeWarn(context);
-
+        file.deleteSync(recursive: true);
       } else {
-
         await fileUploadStorage(file, recording);
-
       }
     }
     //THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
       var recording = await AudioRecorder.stop();
       File file = new File(recording.path);
-      print("Stop recording: ${recording.path} | File length: ${await file.length()}");
+      print("Stop recording: ${recording.path} | File length: ${await file
+          .length()}");
 
       //UPLOAD FAILS IF FILES SIZE > 40MB
       if (await file.length() > 40000000) {
-
         snackbarOverSizeWarn(context);
-
+        file.deleteSync(recursive: true);
       } else {
-
-        await listPEntry(saveAndTranscribe,file, recording);
+        await listPEntry(saveAndTranscribe, file, recording);
 
         await bigListRequestEntry(saveAndTranscribe);
-
       }
+
+      globalRecorderState=0;
+
     }
   }
 
@@ -411,108 +414,110 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 //PUSH BASICS
 //ADD AUDIOS TO THE LIST
 //USING BIG LIST WITH FIRE STORE TO KEEP A BACKUP
-Future bigListRequestEntry(saveAndTranscribe) async{
-  print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
-  //GET KEY for BIG LIST
-  String keyForBigList = FirebaseDatabase.instance
-      .reference()
-      .child("DeXAutoCollect")
-      .child("backend")
-      .child("oneBigListOfEMRRequests")
-      .push()
-      .key;
-  //PUSH BASICS
-  await FirebaseDatabase.instance
-      .reference()
-      .child("DeXAutoCollect")
-      .child("backend")
-      .child("backupList")
-      .child(keyForBigList)
-      .set({
-    "em": widget.email.replaceAll(".", " "),
-    "ti": new DateFormat.yMd().add_jm().format(new DateTime.now()),
-    "ty":saveAndTranscribe
-  });
-  //ADD AUDIOS TO THE LIST USING LOOP
-  for (int k = 0; k < uploadAudioURLArray.length; k++) {
-    print("Uploading To BIG: $k ${uploadAudioURLArray[k]}");
+  Future bigListRequestEntry(saveAndTranscribe) async {
+    print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
+    //GET KEY for BIG LIST
+    String keyForBigList = FirebaseDatabase.instance
+        .reference()
+        .child("DeXAutoCollect")
+        .child("backend")
+        .child("oneBigListOfEMRRequests")
+        .push()
+        .key;
+    //PUSH BASICS
     await FirebaseDatabase.instance
         .reference()
         .child("DeXAutoCollect")
         .child("backend")
         .child("backupList")
         .child(keyForBigList)
-        .update({
-      "audioURL-" + k.toString(): uploadAudioURLArray[k]
+        .set({
+      "em": widget.email.replaceAll(".", " "),
+      "ti": new DateFormat.yMd().add_jm().format(new DateTime.now()),
+      "ty": saveAndTranscribe
     });
+    //ADD AUDIOS TO THE LIST USING LOOP
+    for (int k = 0; k < uploadAudioURLArray.length; k++) {
+      print("Uploading To BIG: $k ${uploadAudioURLArray[k]}");
+      await FirebaseDatabase.instance
+          .reference()
+          .child("DeXAutoCollect")
+          .child("backend")
+          .child("backupList")
+          .child(keyForBigList)
+          .update({
+        "audioURL-" + k.toString(): uploadAudioURLArray[k]
+      });
+    }
   }
-}
 
 //UPLOAD TO FIRE BASE STORAGE
-Future fileUploadStorage(file,recording)async{
+  Future fileUploadStorage(file, recording) async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
 
-  String usid;
-  await auth.currentUser().then((user){
-    usid=user.uid;
-    print("UPLOADING TO LIST P | uid>> ${user.uid}");
-  });
+    //UPLOAD FILE
+    print(">>>UPLOADING FILE USING UPLOADTASK");
+    StorageReference ref = FirebaseStorage.instance
+        .ref()
+        .child("Audio")
+        .child(usid)
+        .child(recording.path
+        .toString()
+        .substring(recording.path
+        .toString()
+        .length - 21, recording.path
+        .toString()
+        .length));
 
-  //UPLOAD FILE
-  print(">>>UPLOADING FILE USING UPLOADTASK");
-  StorageReference ref = FirebaseStorage.instance
-      .ref()
-      .child("Audio")
-      .child(usid)
-      .child(recording.path
-      .toString()
-      .substring(recording.path.toString().length - 21,recording.path.toString().length));
+    StorageUploadTask uploadTask = ref.putFile(file);
 
-  StorageUploadTask uploadTask = ref.putFile(file);
-
-  await uploadTask.future.catchError((error){
-    //
-    print(">>Error IN UPLOAD"+error);
-  });
-
-
-  //GET URL
-  Uri fileUrl = (await uploadTask.future).downloadUrl;
-
-  print("File Uploaded == > ${recording.path.toString()}");
+    await uploadTask.future.catchError((error) {
+      //
+      print(">>Error IN UPLOAD" + error);
+    });
 
 
-  //Delete File
-  await uploadTask.future.whenComplete((){
-    //delete file
-    file.deleteSync(recursive: true);
-    print(">>File is DELETED");
-  });
+    //GET URL
+    Uri fileUrl = (await uploadTask.future).downloadUrl;
+
+    print("File Uploaded == > ${recording.path.toString()}");
 
 
-  //ARRAY HOLDS URL TO STORAGE
-  uploadAudioURLArray.add(fileUrl.toString());
-  print(">>>FILE UPLOADED| Url array holdings: $uploadAudioURLArray");
-}
+    //Delete File
+    await uploadTask.future.whenComplete(() {
+      //delete file
+      file.deleteSync(recursive: true);
+      print(">>File is DELETED");
+    });
+
+
+    //ARRAY HOLDS URL TO STORAGE
+    uploadAudioURLArray.add(fileUrl.toString());
+    print(">>>FILE UPLOADED| Url array holdings: $uploadAudioURLArray");
+  }
 
 //SNACKBAR WARNING MORE THAN 40 MB
-snackbarOverSizeWarn(context){
-  Scaffold.of(context).showSnackBar(
-    new SnackBar(
-      content: new Text(
-        "Upload Failed! File size greater than 40MB; Please contact support",
-        style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
+  snackbarOverSizeWarn(context) {
+    Scaffold.of(context).showSnackBar(
+      new SnackBar(
+        content: new Text(
+          "Upload Failed! File size greater than 40MB; File Deleted! Please contact support",
+          style: new TextStyle(color: Colors.yellow, fontSize: 20.0),
+        ),
+        duration: new Duration(seconds: 50),
       ),
-      duration: new Duration(seconds: 50),
-    ),
-  );
-}
+    );
+  }
 
 //FIRE STORE listP
-Future listPEntry(saveAndTranscribe,file, recording)async{
-
+  Future listPEntry(saveAndTranscribe, file, recording) async {
     String usid;
-    await auth.currentUser().then((user){
-      usid=user.uid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
     //UPLOAD BASICS
@@ -520,18 +525,18 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
     await Firestore.instance.collection('listP').add({
 //      "em": widget.email.replaceAll(".", " "),
       "ti": new DateTime.now().millisecondsSinceEpoch,
-      "usid":usid,
-      "ty":saveAndTranscribe,
-      "st":0,
-      "r-d":storageRedundancyList
-    }).then((val){
+      "usid": usid,
+      "ty": saveAndTranscribe,
+      "st": 0,
+      "r-d": storageRedundancyList
+    }).then((val) {
       print(">>key ${val.documentID}");
       docuId = val.documentID;
     });
 
     //CLEAR THE LIST
     storageRedundancyList.clear();
-    print("Storage Redun: "+storageRedundancyList.toString());
+    print("Storage Redun: " + storageRedundancyList.toString());
     //redundancy write
     //find a better logic
 //    for (int k = 0; k < storageRedundancyList.length; k++) {
@@ -554,57 +559,55 @@ Future listPEntry(saveAndTranscribe,file, recording)async{
 
     String updateSK;
     int updateSKI;
-    await Firestore.instance.collection('docsP').where('usid',isEqualTo: usid).getDocuments().then((d){
-      updateSKI=d.documents[0]['nre'];
-      updateSK=d.documents[0].documentID;
+    await Firestore.instance.collection('docsP')
+        .where('usid', isEqualTo: usid)
+        .getDocuments()
+        .then((d) {
+      updateSKI = d.documents[0]['nre'];
+      updateSK = d.documents[0].documentID;
     });
 
     await Firestore.instance.collection('docsP').document(updateSK).updateData({
-        'nre': updateSKI+1
-      });
+      'nre': updateSKI + 1
+    });
 
     print(">>ALL DONE WITH");
-}
+  }
 
 
-  //PHONE PERMISSIONS AND PAUSE DURING PHONE
-/*  Phonecallstate phonecallstate;
-  PhonecallState phonecallstatus;
-  initPhCallState() async {
-    print("Phonecallstate init");
+  //PHONE PERMISSIONS AND STOP DURING PHONE
+  initPhCallState()async {
+    streamAu = phoneStateCallEvent.listen((PhoneStateCallEvent event) {
+//      print('Call is Incoming/Connected: ' + event.stateC);
+      //event.stateC has values "true" or "false"
+      if(event.stateC=='true'){
+        //stop
+        AudioRecorder.isRecording.then((vol){
+          if(vol == true){
 
-    phonecallstate = new Phonecallstate();
-    phonecallstatus = PhonecallState.none;
+            if(globalRecorderState==0) {
+              print('>>Recorder is Pause--Stopped because of call');
+              _audioRecorderFunction(2, 0);
+              stopWatch.stop();
+            }
 
-     phonecallstate.setIncomingHandler(() {
-      setState(() {
-        phonecallstatus = PhonecallState.incoming;
-      });
+            //permit start audio recording
+            globalRecorderState=1;
+
+          }
+        });
+      }else if(event.stateC=='false'){
+        //resume
+        if(globalRecorderState==1){
+          print('>>Recorder is Resumed because of call');
+          _audioRecorderFunction(1, 0);
+          stopWatch.start();
+
+          //cancel permission
+          globalRecorderState=0;
+        }
+      }
     });
+  }
 
-    phonecallstate.setDialingHandler(() {
-      setState(() {
-        phonecallstatus = PhonecallState.dialing;
-
-      });
-    });
-
-    phonecallstate.setConnectedHandler(() {
-      setState(() {
-        phonecallstatus = PhonecallState.connected;
-        _audioRecorderFunction(2, 0); //pause
-        stopWatch.stop();
-      });
-    });
-
-    phonecallstate.setDisconnectedHandler(() {
-      setState(() {
-        phonecallstatus = PhonecallState.disconnected;
-        _audioRecorderFunction(1, 0); //resume
-        stopWatch.start();
-      });
-    });
-
-    phonecallstate.setErrorHandler((msg) {});
-  }*/
 }

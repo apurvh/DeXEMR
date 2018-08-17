@@ -17,6 +17,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
+int globalRecorderState=0;
+
 List<String> storageRedundancyList = [];
 
 var stopWatch = new Stopwatch();
@@ -158,6 +160,16 @@ class _MainScreenState extends State<MainScreen> {
       if(Theme.of(context).platform == TargetPlatform.iOS)
         print('>>iOS is the Platfrom My Man');
 
+      Directory appDocDirectory = await getApplicationDocumentsDirectory();
+
+      //CREATE A DIRECTORY
+      if (!await Directory(appDocDirectory.path + '/DeX').exists()) {
+        await new Directory(appDocDirectory.path + '/DeX')
+            .create(recursive: true)
+            .then((Directory dir) {
+          print('NEW DIR CREATED>>> ' + dir.path);
+        });
+      }
     }
   }
 
@@ -177,6 +189,8 @@ class _MainScreenState extends State<MainScreen> {
     if (recordState == 1) {
       try {
         if (await AudioRecorder.hasPermissions) {
+
+
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
@@ -197,7 +211,7 @@ class _MainScreenState extends State<MainScreen> {
 
           storageRedundancyList.add(fileNameT);
 
-//          print("Start recording: $path");
+          print("Start recording: $path");
           await AudioRecorder.start(
               path: path, audioOutputFormat: AudioOutputFormat.AAC);
 
@@ -239,6 +253,8 @@ class _MainScreenState extends State<MainScreen> {
     print("ENSURE LOGGED IN SUCCESS: ");
     setState(() {});
   }
+
+
 }
 
 //THIS MODEL STORES AND PASSES DATA SUCH AS TIME AND STATES OF RECORDER WIDGET AND STOPWATCH

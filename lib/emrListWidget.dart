@@ -214,7 +214,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   Widget subtitleEMRListItem(document) {
     if (document['st'] == 0) {
-      return new Text('Audio Saved | Processing..');
+      return new Text('Audio Processing..');
     } else if (document['st'] == 1) {
       return new Text('Audio Saved');
     } else if (document['st'] == 2) {
