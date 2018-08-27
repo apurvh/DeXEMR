@@ -19,11 +19,12 @@ dependencies:
 #  simple_permissions: "^0.1.5"
   share: "^0.5.2"
   scoped_model: "^0.2.0"
-  audio_recorder: "^0.0.4"
+  audio_recorder: ^0.0.5
   scheduled_notifications: "^1.0.0"
   material_search: "^0.2.7"
   cloud_firestore: ^0.7.4
   phone_state_i: ^0.0.1
+  audioplayers: ^0.7.5
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -41,12 +42,11 @@ dev_dependencies:
 # The following section is specific to Flutter.
 flutter:
   assets:
-    - assets/sounds/ting.mp3
+    - assets/sounds/ting2.mp3
     - assets/DeXSwitchOn.png
     - assets/ajax-loader.gif
     - assets/profileImage.png
     - assets/googleSignIn.png
-    - assets/DeXX.jpg
     - assets/DeXX1.jpg
 
 

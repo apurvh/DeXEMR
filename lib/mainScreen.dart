@@ -190,7 +190,6 @@ class _MainScreenState extends State<MainScreen> {
       try {
         if (await AudioRecorder.hasPermissions) {
 
-
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 

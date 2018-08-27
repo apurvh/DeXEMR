@@ -13,6 +13,8 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:phone_state_i/phone_state_i.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:audioplayers/audio_cache.dart';
 
 
 StreamSubscription streamAu;
@@ -27,12 +29,16 @@ class RecorderWidget extends StatefulWidget {
 }
 
 class _RecorderWidgetState extends State<RecorderWidget> {
+
   int pauseButtonState = 0;
+  AudioCache player = new AudioCache(prefix:'sounds/');
+
 
   @override
   initState() {
     super.initState();
     initPhCallState();
+    player.load('ting2.mp3');
   }
 
   @override
@@ -364,6 +370,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
               path: path, audioOutputFormat: AudioOutputFormat.AAC);
 
 //          bool isRecording = await AudioRecorder.isRecording;
+
+
         } else {
           Scaffold.of(context).showSnackBar(
               new SnackBar(content: new Text("You must accept permissions")));
@@ -386,9 +394,16 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       } else {
         await fileUploadStorage(file, recording);
       }
+
+//      globalRecorderState=0;
+
     }
     //THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
+
+      //Done Sound
+      player.play('ting2.mp3');
+
       var recording = await AudioRecorder.stop();
       File file = new File(recording.path);
       print("Stop recording: ${recording.path} | File length: ${await file
@@ -578,13 +593,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   //PHONE PERMISSIONS AND STOP DURING PHONE
   initPhCallState()async {
     streamAu = phoneStateCallEvent.listen((PhoneStateCallEvent event) {
-//      print('Call is Incoming/Connected: ' + event.stateC);
+      print('Call is Incoming/Connected::: ' + event.stateC + ' $globalRecorderState ');
       //event.stateC has values "true" or "false"
       if(event.stateC=='true'){
         //stop
         AudioRecorder.isRecording.then((vol){
           if(vol == true){
-
             if(globalRecorderState==0) {
               print('>>Recorder is Pause--Stopped because of call');
               _audioRecorderFunction(2, 0);
@@ -600,6 +614,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         //resume
         if(globalRecorderState==1){
           print('>>Recorder is Resumed because of call');
+
           _audioRecorderFunction(1, 0);
           stopWatch.start();
 

@@ -122,7 +122,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       return StreamBuilder(
           stream: Firestore.instance
               .collection("listP")
-              .where('usid', isEqualTo: usid)
+              .where('usid', isEqualTo: 'Q0gDrO5Ol9QbNux6M7s4DqMwGi13')
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
@@ -149,25 +149,31 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
     DateTime datStamp = DateTime.fromMillisecondsSinceEpoch(document['ti']);
 
-    return Column(
-      children: <Widget>[
-        ListTile(
-          title: titleEMRListItem(document),
-          subtitle: subtitleEMRListItem(document),
-          leading: leadingEMRListItem(document),
-          trailing: new Text(datStamp.day.toString() +
-              '/' +
-              datStamp.month.toString() +
-              '/' +
-              datStamp.year.toString()),
-          onTap: () {
-            //MATERIAL ROUTE TO EMR
-            onTapEMRListItem(document);
-          },
-        ),
-        Divider(),
-      ],
-    );
+    //SHOW ENTRY ONLY IF 0,1,2,8
+    //FOR ANY OTHER NUMBER, DONT SHOW
+    if(document['st'] == 0 || document['st'] == 1 || document['st'] == 2 || document['st'] == 8){
+      return Column(
+        children: <Widget>[
+          ListTile(
+            title: titleEMRListItem(document),
+            subtitle: subtitleEMRListItem(document),
+            leading: leadingEMRListItem(document),
+            trailing: new Text(datStamp.day.toString() +
+                '/' +
+                datStamp.month.toString() +
+                '/' +
+                datStamp.year.toString()),
+            onTap: () {
+              //MATERIAL ROUTE TO EMR
+              onTapEMRListItem(document);
+            },
+          ),
+          Divider(),
+        ],
+      );
+    }else{
+      return Container();
+    }
   }
 
 //              //MATERIAL ROUTE TO EMR
