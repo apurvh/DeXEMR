@@ -23,8 +23,10 @@ class _EMRPageState extends State<EMRPage> {
   AudioPlayer audioPlayer = new AudioPlayer();
 
   var referenceToEMR;
+  BuildContext cccContext;
   @override
   void initState() {
+
     super.initState();
   }
 
@@ -50,26 +52,129 @@ class _EMRPageState extends State<EMRPage> {
               })
         ],
       ),
-      body: new Column(
+      body: Builder(builder: (context){
+        cccContext=context;
+        return new Column(
+          children: <Widget>[
+            new StreamBuilder(
+              stream: Firestore.instance
+                  .collection("ptsP")
+                  .where('usid', isEqualTo: widget.usid)
+                  .where('nn', isEqualTo: widget.name)
+                  .where('ns', isEqualTo: widget.sname)
+                  .where('ph', isEqualTo: widget.phnumber)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return Center(child: Center(child: const Text("Loading..")));
+                return _emrPageRender(context, snapshot.data.documents[0]);
+              },
+            ),
+          ],
+        );
+      }),
+      floatingActionButton: feedBackButton(),
+    );
+  }
+
+  Widget feedBackButton(){
+    if(true)
+    return RawMaterialButton(onPressed: (){feedBackDoctor();},
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          new StreamBuilder(
-            stream: Firestore.instance
-                .collection("ptsP")
-                .where('usid', isEqualTo: widget.usid)
-                .where('nn', isEqualTo: widget.name)
-                .where('ns', isEqualTo: widget.sname)
-                .where('ph', isEqualTo: widget.phnumber)
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData)
-                return Center(child: Center(child: const Text("Loading..")));
-              return _emrPageRender(context, snapshot.data.documents[0]);
-            },
-          ),
+          Icon(Icons.done_all,color: Colors.blue[800],),
+          Text(' APPROVE/FEEDBACK',style: TextStyle(color: Colors.blue[800]),),
+        ],
+      ),
+
+    );
+    else return Container();
+  }
+
+  ///ADD 40 POINTS TO SCR
+  ///ADD FEEDBACK TEXT FBK BY DOCTOR
+  ///ADD ACCURACY FEEDBACK BY DOCTOR
+  TextEditingController feedbackController = new TextEditingController();
+  feedBackDoctor(){
+    return showDialog(
+      barrierDismissible: false,
+      context: context,
+      child: new AlertDialog(
+        title: Text(
+          'Approve & give Feedback',
+        ),
+        content: collectFF(),
+        actions: <Widget>[
+          FlatButton(onPressed: (){Navigator.pop(context);}, child: Text('Not now')),
+          FlatButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Done')),
         ],
       ),
     );
   }
+
+  Widget collectFF(){
+    return new TextFormField(
+      decoration: new InputDecoration(
+        labelText: 'Feedback',
+      ),
+      keyboardType: TextInputType.multiline,
+      controller: feedbackController,
+      maxLines: 4,
+    );
+  }
+
+  feedBackSubmit()async {
+
+    Scaffold.of(cccContext).showSnackBar(new SnackBar(
+      content: new Text(
+        "Submitting...",
+        style: TextStyle(fontSize: 20.0),
+      ),
+      duration: new Duration(seconds: 4),
+    ));
+
+    ///Add 40 points to scr
+    ///First get value
+    int scrValueBeforeFeedback;
+    String scrValueBeforeFeedbackKey;
+    await Firestore.instance.collection('listP')
+        .where('usid',isEqualTo: widget.usid)
+        .where('nn',isEqualTo: widget.name)
+        .where('ns',isEqualTo: widget.sname)
+        .where('ph',isEqualTo: widget.phnumber)
+        .orderBy('ti',descending: true)
+        .limit(1)
+        .getDocuments()
+        .then((doc){
+      scrValueBeforeFeedback=doc.documents[0]['scr'];
+      scrValueBeforeFeedbackKey=doc.documents[0].documentID;
+    });
+    ///Then add 40 points
+    await Firestore.instance.collection('listP').document(scrValueBeforeFeedbackKey).updateData({
+      'scr':scrValueBeforeFeedback+40,
+    });
+
+    String textFeedbackKey;
+    ///Add the feedback text
+    await Firestore.instance.collection('ptsP')
+        .where('usid',isEqualTo: widget.usid)
+        .where('nn',isEqualTo: widget.name)
+        .where('ns',isEqualTo: widget.sname)
+        .where('ph',isEqualTo: widget.phnumber)
+        .orderBy('ti',descending: true)
+        .limit(1)
+        .getDocuments()
+        .then((doc){
+      textFeedbackKey=doc.documents[0].documentID;
+    });
+    await Firestore.instance.collection('ptsP').document(textFeedbackKey).updateData({
+      'fdb':feedbackController.text,
+    });
+  }
+  ///done
+
+
 
   _emrPageRender(context, document) {
 
@@ -89,36 +194,39 @@ class _EMRPageState extends State<EMRPage> {
         children: <Widget>[
 
           _emrPageTileRender("Name",
-              document['nn'].toString() + ' ' + document['ns'].toString()),
-          _emrPageTileRender("Phone", document['ph'].toString()),
-          _emrPageTileRender("Age", aaage.toString()),
-          _emrPageTileRender("Recorded On", whenn),
-          _emrPageTileRender("Gender", document['ge'].toString()),
+              document['nn'].toString() + ' ' + document['ns'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Phone", document['ph'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Age", aaage.toString(),Colors.grey[50]),
+          _emrPageTileRender("Recorded On", whenn,Colors.grey[50]),
+          _emrPageTileRender("Gender", document['ge'].toString(),Colors.grey[50]),
 
-          _emrPageTileRender("Chief Complaint", document['cc'].toString()),
-          _emrPageTileRender("Present History", document['ha'].toString()),
-          _emrPageTileRender("Past History", document['hb'].toString()),
-          _emrPageTileRender("Family History", document['hc'].toString()),
-          _emrPageTileRender("Drug History", document['hd'].toString()),
-          _emrPageTileRender("Allergy History", document['he'].toString()),
-          _emrPageTileRender("Addictions", document['hf'].toString()),
+          _emrPageTileRender("Chief Complaint", document['cc'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Present History", document['ha'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Past History", document['hb'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Family History", document['hc'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Drug History", document['hd'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Allergy History", document['he'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Addictions", document['hf'].toString(),Colors.grey[50]),
           _emrPageTileRender(
-              "Menstrual & Obsteric History", document['hg'].toString()),
+              "Menstrual & Obsteric History", document['hg'].toString(),Colors.grey[50]),
 
-          _emrPageTileRender("General Examination", document['eg'].toString()),
-          _emrPageTileRender("Local Examiniation", document['el'].toString()),
-          _emrPageTileRender("Diagnosis", document['di'].toString()),
+          _emrPageTileRender("General Examination", document['eg'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Local Examiniation", document['el'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Diagnosis", document['di'].toString(),Colors.grey[50]),
 
-          _emrPageTileRender("Investigations Advised", document['ia'].toString()),
-          _emrPageTileRender("Investigations Done", document['id'].toString()),
-          _emrPageTileRender("Treatment Plan", document['tp'].toString()),
+          _emrPageTileRender("Investigations Advised", document['ia'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Investigations Done", document['id'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Treatment Plan", document['tp'].toString(),Colors.grey[50]),
 
-          _emrPageTileRender("Prescription", document['pp'].toString()),
-          _emrPageTileRender("Follow Up", document['fu'].toString()),
-          _emrPageTileRender("Counselling", document['co'].toString()),
+          _emrPageTileRender("Prescription", document['pp'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Follow Up", document['fu'].toString(),Colors.grey[50]),
+          _emrPageTileRender("Counselling", document['co'].toString(),Colors.grey[50]),
 
-          _emrPageTileRender("Other Info", document['zz'].toString()),
+          _emrPageTileRender("Other Info", document['zz'].toString(),Colors.grey[50]),
 
+          _emrPageTileRender("Feedback by Doctor", document['fdb'].toString(),Colors.yellowAccent[100]),
+
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
 
         ],
       ),
@@ -126,31 +234,39 @@ class _EMRPageState extends State<EMRPage> {
   }
 
   ///TODO check whther content '' is sufficient
-  _emrPageTileRender(heading, content) {
+  _emrPageTileRender(heading, content,bcolor) {
     if (content == "null" || content==''){
       return Container();
     }
     else {
       return Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            new Text(
-              heading,
-              style: new TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.teal,
-                fontSize: 14.0,
-              ),
+        padding: const EdgeInsets.all(0.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: bcolor
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(5.0,3.0,5.0,2.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                new Text(
+                  heading,
+                  style: new TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal,
+                    fontSize: 14.0,
+                  ),
+                ),
+                new Text(
+                  content,
+                  style: new TextStyle(fontSize: 18.0),
+                ),
+              ],
             ),
-            new Text(
-              content,
-              style: new TextStyle(fontSize: 18.0),
-            ),
-          ],
+          ),
         ),
       );
     }

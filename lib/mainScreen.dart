@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
       model: new CounterModel(),
       child: new Scaffold(
         appBar: new AppBar(
-          title: new Text("DeX EMR"),
+          title: new Text("DeX Notes"),
           elevation: 3.0,
           backgroundColor: Colors.teal[800],
 

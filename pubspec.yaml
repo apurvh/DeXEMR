@@ -25,6 +25,7 @@ dependencies:
   cloud_firestore: ^0.7.4
   phone_state_i: ^0.0.1
   audioplayers: ^0.7.5
+  percent_indicator: ^1.0.9
 
 
   # The following adds the Cupertino Icons font to your application.

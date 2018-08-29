@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:dex_for_doctor/emrWidget.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
@@ -38,16 +39,18 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
     bool whetherDeXDirExists = false;
-    await new Directory(appDocDirectory.path+'/'+'DeX')
-        .exists().then((what){
-          whetherDeXDirExists=what;
+    await new Directory(appDocDirectory.path + '/' + 'DeX')
+        .exists()
+        .then((what) {
+      whetherDeXDirExists = what;
     });
-    if(whetherDeXDirExists) {
+    if (whetherDeXDirExists) {
       new Directory(appDocDirectory.path + '/' + 'DeX')
           .list(recursive: true)
           .toList()
           .then((listOFDirContent) {
-        print("DeX directoty >>>>Length: ${listOFDirContent.length} ---CONTENT: $listOFDirContent");
+        print(
+            "DeX directoty >>>>Length: ${listOFDirContent.length} ---CONTENT: $listOFDirContent");
         if (listOFDirContent.length > 0) {
           for (int h = 0; h < listOFDirContent.length; h++) {
             reUploadCrashedAudio(listOFDirContent[h]);
@@ -60,13 +63,12 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
         }
       });
-    }
-    else{
+    } else {
       print('>>>No Audio directory yet');
     }
   }
 
-  reUploadCrashedAudio(tobeUploadedFile) async{
+  reUploadCrashedAudio(tobeUploadedFile) async {
     print("Attempting to Upload again: $tobeUploadedFile");
 //    print("Attempting to Upload again: ${tobeUploadedFile
 //        .toString()
@@ -76,23 +78,22 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         .ref()
         .child("Audio")
         .child(usid)
-        .child(tobeUploadedFile
-        .toString()
-        .substring(tobeUploadedFile.toString().length - 22,tobeUploadedFile.toString().length-1));
+        .child(tobeUploadedFile.toString().substring(
+            tobeUploadedFile.toString().length - 22,
+            tobeUploadedFile.toString().length - 1));
 
     File rfile = new File(tobeUploadedFile.path);
     StorageUploadTask uploadTask = refOfCA.putFile(rfile);
     Uri fileUrl = (await uploadTask.future).downloadUrl;
 
     //Delete File
-    await uploadTask.future.whenComplete((){
+    await uploadTask.future.whenComplete(() {
       print(">>Upload COmplete==> $tobeUploadedFile");
 
       rfile.deleteSync(recursive: true);
 
       print(">>File is DELETED");
     });
-
   }
 
   getUsid() async {
@@ -122,7 +123,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       return StreamBuilder(
           stream: Firestore.instance
               .collection("listP")
-              .where('usid', isEqualTo: 'Q0gDrO5Ol9QbNux6M7s4DqMwGi13')
+              .where('usid', isEqualTo: usid) //Q0gDrO5Ol9QbNux6M7s4DqMwGi13
+              .orderBy('ti',descending: true)
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData)
@@ -133,7 +135,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
             else {
               return ListView.builder(
                   itemCount: snapshot.data.documents.length,
-                  reverse: true,
+                  reverse: false,
                   shrinkWrap: true,
                   itemBuilder: (context, index) {
                     return _buildListEMRItem(
@@ -146,23 +148,21 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   _buildListEMRItem(context, document, index) {
 //    print(">>index $index");
-
     DateTime datStamp = DateTime.fromMillisecondsSinceEpoch(document['ti']);
 
     //SHOW ENTRY ONLY IF 0,1,2,8
     //FOR ANY OTHER NUMBER, DONT SHOW
-    if(document['st'] == 0 || document['st'] == 1 || document['st'] == 2 || document['st'] == 8){
+    if (document['st'] == 0 ||
+        document['st'] == 1 ||
+        document['st'] == 2 ||
+        document['st'] == 8) {
       return Column(
         children: <Widget>[
           ListTile(
             title: titleEMRListItem(document),
-            subtitle: subtitleEMRListItem(document),
+            subtitle: subtitleEMRListItem(document, datStamp),
             leading: leadingEMRListItem(document),
-            trailing: new Text(datStamp.day.toString() +
-                '/' +
-                datStamp.month.toString() +
-                '/' +
-                datStamp.year.toString()),
+            trailing: trailEMRListItem(document),
             onTap: () {
               //MATERIAL ROUTE TO EMR
               onTapEMRListItem(document);
@@ -171,7 +171,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           Divider(),
         ],
       );
-    }else{
+    } else {
       return Container();
     }
   }
@@ -194,22 +194,187 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   //st = 2 | for complete conversion
   //st = 0 | for complete conversion with Read/verified
 
-  //RENDERS LEADING
+  ///RENDERS TRAILING
+  Widget trailEMRListItem(document) {
+    Color colorX;
+    if (document['scr'] != null) {
+      if (document['scr'] < 60)
+        colorX = Colors.red;
+      else if (document['scr'] > 59 && document['scr'] < 80)
+        colorX = Colors.lightGreen[600];
+      else if (document['scr'] > 79) colorX = Colors.blue[700];
+    }
+
+    if (document['ty'] == 1) {
+      if (document['scr'] == null) {
+        return Container(
+          padding: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.teal,
+          ),
+          child: Text(
+            '0',
+            style: TextStyle(
+              color: Colors.grey[100],
+            ),
+          ),
+        );
+      } else {
+        return Container(
+          padding: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colorX,
+              boxShadow: [
+                BoxShadow(color: colorX, blurRadius: 1.0, spreadRadius: 0.0)
+              ]),
+          child: GestureDetector(
+            child: Text(
+              document['scr'].toString(),
+              style: TextStyle(
+                color: Colors.grey[100],
+              ),
+            ),
+            onTap: () {
+              scoreInfo(document,colorX);
+              },
+          ),
+        );
+      }
+    } else {
+      return Icon(
+        Icons.transform,
+        color: Colors.blueGrey[50],
+      );
+    }
+  }
+
+  ///renders score info:
+  scoreInfo(document,colorX) {
+
+    double percentX= document['scr']/100;
+    if(percentX>1)percentX=1.0;
+//    loadSuggestions(document);
+
+    return showDialog(
+        context: context,
+        child: new AlertDialog(
+          title: Text(
+            'Autogenerated Score',
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              new LinearPercentIndicator(
+                width: MediaQuery
+                    .of(context)
+                    .size
+                    .width - 200,
+                leading: Text(
+                  'Overall:', style: TextStyle(fontWeight: FontWeight.bold),),
+                animation: true,
+                lineHeight: 16.0,
+                percent: percentX,
+                linearStrokeCap: LinearStrokeCap.butt,
+                center: Text(document['scr'].toString(),
+                  style: TextStyle(color: Colors.grey[100]),),
+                progressColor: colorX,
+                animationDuration: 2000,
+              ),
+              Text('This score is autogenerated from the transcription'),
+              Divider(color: Colors.grey[900],),
+              Text(
+                'Suggestions:', style: TextStyle(fontWeight: FontWeight.bold),),
+              new ScoreInfo(document: document,colorX: colorX,)
+//              suggestionAppWidget(),
+//              suggestionListWidget(),
+            ],
+          ),
+        ),
+      );
+
+  }
+
+/*  ///load blank headings in list
+  List<String> loadSuggestionsList =[];
+  int loadSuggestionsApproval=0;
+  loadSuggestions(document)async {
+    loadSuggestionsList.clear();
+    await Firestore.instance.collection('ptsP')
+        .where('usid',isEqualTo: document['usid'])
+        .where('nn',isEqualTo: document['nn'])
+        .where('ns',isEqualTo: document['ns'])
+        .where('ph',isEqualTo: document['ph'])
+        .orderBy('ti',descending: true)
+        .limit(1)
+        .getDocuments()
+        .then((doc){
+
+          if(doc.documents[0]['dy']==null) loadSuggestionsList.add('Age');
+          if(doc.documents[0]['cc']=='') loadSuggestionsList.add('Chief Complaint');
+
+          if(doc.documents[0]['ha']=='') loadSuggestionsList.add('Present History');
+          if(doc.documents[0]['hb']=='') loadSuggestionsList.add('Past History');
+          if(doc.documents[0]['hc']=='') loadSuggestionsList.add('Family History');
+          if(doc.documents[0]['hd']=='') loadSuggestionsList.add('Drug History');
+          if(doc.documents[0]['he']=='') loadSuggestionsList.add('Allergy History');
+          if(doc.documents[0]['hf']=='') loadSuggestionsList.add('Addictions');
+
+          if(doc.documents[0]['el']=='') loadSuggestionsList.add('Local Examiniation');
+
+          if(doc.documents[0]['di']=='') loadSuggestionsList.add('Diagnosis');
+          if(doc.documents[0]['id']=='') loadSuggestionsList.add('Investigations Done');
+
+          if(doc.documents[0]['tp']=='') loadSuggestionsList.add('Treatment Plan');
+          if(doc.documents[0]['co']=='') loadSuggestionsList.add('Counselling');
+
+          if(doc.documents[0]['fdb']==null) loadSuggestionsApproval=1;
+    });
+  }
+  Widget suggestionListWidget(){
+    if(loadSuggestionsList.length>0)
+    return Text('-Include $loadSuggestionsList');
+    else{
+      return Container();
+    }
+  }
+  Widget suggestionAppWidget(){
+    if(loadSuggestionsApproval==1)
+      return Text('-Approve/feedback');
+    else{
+      return Container();
+    }
+  }
+  ///load blank headings in list -- done*/
+
+
+
+  ///RENDERS LEADING
   Widget leadingEMRListItem(document) {
     if (document['st'] == 0) {
-      return new Icon(Icons.cloud_queue);
+      return new Icon(
+        Icons.cloud_queue,
+        color: Colors.blueGrey[200],
+      );
     } else if (document['st'] == 1) {
-      return new Icon(Icons.cloud_queue);
+      return new Icon(
+        Icons.cloud_queue,
+        color: Colors.blueGrey[200],
+      );
     } else if (document['st'] == 2) {
       return new Icon(
         Icons.done_all,
         size: 22.0,
-        color: Colors.grey[400],
+        color: Colors.blueGrey[200],
       );
     } else if (document['st'] == 8) {
-      return new Icon(Icons.cloud_queue);
-    }
-    else {
+      return new Icon(
+        Icons.cloud_queue,
+        color: Colors.blueGrey[200],
+      );
+    } else {
       return new Icon(
         Icons.done_all,
         size: 22.0,
@@ -218,21 +383,37 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     }
   }
 
-  Widget subtitleEMRListItem(document) {
+  Widget subtitleEMRListItem(document, datStamp) {
     if (document['st'] == 0) {
       return new Text('Audio Processing..');
     } else if (document['st'] == 1) {
       return new Text('Audio Saved');
     } else if (document['st'] == 2) {
-      return new Text('Transcribed | Verify');
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          new Icon(
+            Icons.date_range,
+            color: Colors.grey[500],
+            size: 16.0,
+          ),
+          new Text(
+            ' ' +
+                datStamp.day.toString() +
+                '/' +
+                datStamp.month.toString() +
+                '/' +
+                datStamp.year.toString(),
+            style: TextStyle(color: Colors.grey[500]),
+          ),
+        ],
+      );
     } else if (document['st'] == 8) {
       return new Text('Transcribing..');
-    }
-    else {
+    } else {
       return new Text(document['ph'].toString());
     }
   }
-
 
   //CAREFULL about st having other values
   Widget titleEMRListItem(document) {
@@ -256,8 +437,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         'ID-' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
       );
-    }
-    else {
+    } else {
       return new Text(
         document['nn'] + ' ' + document['ns'],
         style: TextStyle(fontWeight: FontWeight.bold),
@@ -267,7 +447,6 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   onTapEMRListItem(document) {
     if (document['st'] == 2 || document['st'] == 3) {
-
       Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
         return new EMRPage(
           name: document['nn'],
@@ -281,3 +460,91 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     }
   }
 }
+
+class ScoreInfo extends StatefulWidget {
+
+  const ScoreInfo({this.document,this.colorX});
+
+  final dynamic document;
+  final Color colorX;
+
+  @override
+  _ScoreInfoState createState() => _ScoreInfoState();
+}
+
+class _ScoreInfoState extends State<ScoreInfo> {
+  @override
+  Widget build(BuildContext context) {
+
+    double percentX= widget.document['scr']/100;
+    if(percentX>1)percentX=1.0;
+    loadSuggestions(widget.document);
+    print("hhhhhhhhhhhhhhh");
+    return new Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        suggestionAppWidget(),
+        suggestionListWidget(),
+      ],
+    );
+
+  }
+
+  List<String> loadSuggestionsList =[];
+  int loadSuggestionsApproval=0;
+  int setStateO=0;
+  loadSuggestions(document)async {
+    loadSuggestionsList.clear();
+    await Firestore.instance.collection('ptsP')
+        .where('usid',isEqualTo: document['usid'])
+        .where('nn',isEqualTo: document['nn'])
+        .where('ns',isEqualTo: document['ns'])
+        .where('ph',isEqualTo: document['ph'])
+        .orderBy('ti',descending: true)
+        .limit(1)
+        .getDocuments()
+        .then((doc){
+
+      if(doc.documents[0]['dy']==null) loadSuggestionsList.add('Age');
+      if(doc.documents[0]['cc']=='') loadSuggestionsList.add('Chief Complaint');
+
+      if(doc.documents[0]['ha']=='') loadSuggestionsList.add('Present History');
+      if(doc.documents[0]['hb']=='') loadSuggestionsList.add('Past History');
+      if(doc.documents[0]['hc']=='') loadSuggestionsList.add('Family History');
+      if(doc.documents[0]['hd']=='') loadSuggestionsList.add('Drug History');
+      if(doc.documents[0]['he']=='') loadSuggestionsList.add('Allergy History');
+      if(doc.documents[0]['hf']=='') loadSuggestionsList.add('Addictions');
+
+      if(doc.documents[0]['el']=='') loadSuggestionsList.add('Local Examiniation');
+
+      if(doc.documents[0]['di']=='') loadSuggestionsList.add('Diagnosis');
+      if(doc.documents[0]['id']=='') loadSuggestionsList.add('Investigations Done');
+
+      if(doc.documents[0]['tp']=='') loadSuggestionsList.add('Treatment Plan');
+      if(doc.documents[0]['co']=='') loadSuggestionsList.add('Counselling');
+
+      if(doc.documents[0]['fdb']==null) loadSuggestionsApproval=1;
+    });
+
+    if(setStateO==0)
+    setState(() {
+      setStateO=1;
+    });
+  }
+
+  Widget suggestionListWidget(){
+    if(loadSuggestionsList.length>0)
+      return Text('-Include $loadSuggestionsList');
+    else{
+      return Container();
+    }
+  }
+  Widget suggestionAppWidget(){
+    if(loadSuggestionsApproval==1)
+      return Text('-Approve/feedback');
+    else{
+      return Container();
+    }
+  }
+}
+
