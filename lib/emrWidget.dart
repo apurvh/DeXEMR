@@ -84,7 +84,7 @@ class _EMRPageState extends State<EMRPage> {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Icon(Icons.done_all,color: Colors.blue[800],),
-          Text(' APPROVE/FEEDBACK',style: TextStyle(color: Colors.blue[800]),),
+          Text(' VERIFY/FEEDBACK',style: TextStyle(color: Colors.blue[800]),),
         ],
       ),
 
@@ -102,25 +102,44 @@ class _EMRPageState extends State<EMRPage> {
       context: context,
       child: new AlertDialog(
         title: Text(
-          'Approve & give Feedback',
+          'Verify/Feedback',
         ),
         content: collectFF(),
         actions: <Widget>[
           FlatButton(onPressed: (){Navigator.pop(context);}, child: Text('Not now')),
-          FlatButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Done')),
+          FlatButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Submit')),
         ],
       ),
     );
   }
 
   Widget collectFF(){
-    return new TextFormField(
-      decoration: new InputDecoration(
-        labelText: 'Feedback',
-      ),
-      keyboardType: TextInputType.multiline,
-      controller: feedbackController,
-      maxLines: 4,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+
+//        Text('Feedback: '),
+        new TextFormField(
+          decoration: new InputDecoration(
+            labelText: 'Add any corrections',
+          ),
+          keyboardType: TextInputType.multiline,
+          controller: feedbackController,
+          maxLines: 2,
+        ),
+//        Divider(),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Icon(Icons.done_all),
+              Text(' Transcription Verified'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
