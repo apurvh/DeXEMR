@@ -113,7 +113,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     );
   }
 
-  //LIST OF PATIENT RECORDS FROM DB
+  ///LIST OF PATIENT RECORDS FROM DB
   Widget _recordsList() {
     if (usid == null) {
       return Center(
@@ -123,7 +123,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       return StreamBuilder(
           stream: Firestore.instance
               .collection("listP")
-              .where('usid', isEqualTo: usid) //Q0gDrO5Ol9QbNux6M7s4DqMwGi13 ppSNP5pZjheIkEFiNP764djBTE13
+              .where('usid', isEqualTo: usid) //Q0gDrO5Ol9QbNux6M7s4DqMwGi13 ppSNP5pZjheIkEFiNP764djBTE13 otXNQPALfhYi6Za6axCkFgE4G4J3
               .orderBy('ti',descending: true)
               .snapshots(),
           builder: (context, snapshot) {

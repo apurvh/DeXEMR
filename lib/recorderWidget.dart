@@ -15,6 +15,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:phone_state_i/phone_state_i.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:audioplayers/audio_cache.dart';
+import 'package:flutter/services.dart';
+
 
 
 StreamSubscription streamAu;
@@ -30,12 +32,13 @@ class RecorderWidget extends StatefulWidget {
 
 class _RecorderWidgetState extends State<RecorderWidget> {
 
-  int pauseButtonState = 0;
+  int pauseButtonState;
   AudioCache player = new AudioCache(prefix:'sounds/');
 
 
   @override
   initState() {
+    pauseButtonState=0;
     super.initState();
     initPhCallState();
     player.load('ting2.mp3');
@@ -466,7 +469,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
-//UPLOAD TO FIRE BASE STORAGE
+  ///UPLOAD TO FIRE BASE STORAGE
   Future fileUploadStorage(file, recording) async {
     String usid;
     await auth.currentUser().then((user) {
@@ -488,7 +491,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .toString()
         .length));
 
-    StorageUploadTask uploadTask = ref.putFile(file);
+
+
+    StorageUploadTask uploadTask = ref.putFile(file,StorageMetadata(contentType: 'audio/m4a'));
 
     await uploadTask.future.catchError((error) {
       //
@@ -547,11 +552,11 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }).then((val) {
       print(">>key ${val.documentID}");
       docuId = val.documentID;
+      //CLEAR THE LIST
+      storageRedundancyList.clear();
+      print("Storage Redun: " + storageRedundancyList.toString());
     });
 
-    //CLEAR THE LIST
-    storageRedundancyList.clear();
-    print("Storage Redun: " + storageRedundancyList.toString());
     //redundancy write
     //find a better logic
 //    for (int k = 0; k < storageRedundancyList.length; k++) {
@@ -592,6 +597,14 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
   //PHONE PERMISSIONS AND STOP DURING PHONE
   initPhCallState()async {
+
+    //Refresh widgets
+    SystemChannels.lifecycle.setMessageHandler((msg){
+      debugPrint('SystemChannels> $msg');
+      if(msg==AppLifecycleState.resumed.toString())setState((){});
+      print('DEBUG: pauseButtonState=$pauseButtonState | ');
+    });
+
     streamAu = phoneStateCallEvent.listen((PhoneStateCallEvent event) {
       print('Call is Incoming/Connected::: ' + event.stateC + ' $globalRecorderState ');
       //event.stateC has values "true" or "false"
@@ -599,10 +612,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         //stop
         AudioRecorder.isRecording.then((vol){
           if(vol == true){
+
             if(globalRecorderState==0) {
               print('>>Recorder is Pause--Stopped because of call');
               _audioRecorderFunction(2, 0);
               stopWatch.stop();
+              pauseButtonState = 1;
             }
 
             //permit start audio recording
@@ -613,10 +628,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       }else if(event.stateC=='false'){
         //resume
         if(globalRecorderState==1){
-          print('>>Recorder is Resumed because of call');
 
-          _audioRecorderFunction(1, 0);
-          stopWatch.start();
+          if(Theme.of(context).platform == TargetPlatform.android){
+            print('>>Recorder is Resumed because of call | ANDROID');
+            _audioRecorderFunction(1, 0);
+            stopWatch.start();
+            pauseButtonState = 0;
+          }
 
           //cancel permission
           globalRecorderState=0;

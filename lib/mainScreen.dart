@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
+
 int globalRecorderState=0;
 
 List<String> storageRedundancyList = [];
@@ -190,6 +191,9 @@ class _MainScreenState extends State<MainScreen> {
       try {
         if (await AudioRecorder.hasPermissions) {
 
+          storageRedundancyList.clear();
+
+
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
@@ -262,7 +266,7 @@ class CounterModel extends Model {
   int get counter => _counter;
 
   //GETTERS FOR ELAPSED MINUTES AND SECONDS
-  var stopWatch = new Stopwatch();
+//  var stopWatch = new Stopwatch();
   String get elapsedTimeSec =>
       stopWatch.elapsed.inSeconds.toString().padLeft(2, '0');
   String get elapsedTimeMin =>

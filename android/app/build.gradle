@@ -26,13 +26,12 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "dextechnologies.dexfordoctor"
         minSdkVersion 21
         targetSdkVersion 27
         multiDexEnabled true
-        versionCode 31
-        versionName "0.31"
+        versionCode 32
+        versionName "0.32"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
