@@ -21,6 +21,7 @@ import 'package:dex_for_doctor/searchF.dart';
 int globalRecorderState=0;
 
 List<String> storageRedundancyList = [];
+List<String> bigListStorageBackup = [];
 
 var stopWatch = new Stopwatch();
 
@@ -191,9 +192,6 @@ class _MainScreenState extends State<MainScreen> {
       try {
         if (await AudioRecorder.hasPermissions) {
 
-          storageRedundancyList.clear();
-
-
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
@@ -213,6 +211,7 @@ class _MainScreenState extends State<MainScreen> {
               appDocDirectory.path + '/DeX' + '/' + 'DeX-' + fileNameT;
 
           storageRedundancyList.add(fileNameT);
+          bigListStorageBackup.add(fileNameT);
 
           print("Start recording: $path");
           await AudioRecorder.start(
