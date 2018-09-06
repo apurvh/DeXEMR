@@ -335,7 +335,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   //1 = Start RECORDING
   //2 = PAUSE RECORDING
   //3 = RESUME RECORDING
-//  _audioRecorderFunction(int recordState,int saveAndTranscribe)
   //saveAndTranscribe=0; just save
   //saveAndTranscribe=1; save and transcribe
 
@@ -372,25 +371,26 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         print(e);
       }
     }
-    //THIS IS PAUSE | Stopping recording
+    ///THIS IS PAUSE | Stopping recording
     else if (recordState == 2) {
       var recording = await AudioRecorder.stop();
       File file = new File(recording.path);
       print("Stop recording: ${recording.path} | File length: ${await file
           .length()}");
 
-      //UPLOAD FAILS IF FILES SIZE > 40MB
+      ///UPLOAD FAILS IF FILES SIZE > 40MB
       if (await file.length() > 40000000) {
         snackbarOverSizeWarn(context);
         file.deleteSync(recursive: true);
       } else {
-        await fileUploadStorage(file, recording);
+        String docuId = 'NoChnageInSt';
+        await fileUploadStorage(file, recording, docuId);
       }
 
 //      globalRecorderState=0;
 
     }
-    //THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
+    ///THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
       //Done Sound
       player.play('ting2.mp3');
@@ -414,7 +414,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
-
   ///USING BIG LIST WITH FIRE STORE TO KEEP A BACKUP
   Future bigListRequestEntry(saveAndTranscribe) async {
     print(">>>UPLOADING TO TRANSCRIPTION BIG LIST");
@@ -427,12 +426,14 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .set({
       "em": widget.email.replaceAll(".", " "),
       "ty": saveAndTranscribe,
-      'ad':bigListStorageBackup
-    }).then((onV){bigListStorageBackup.clear();});
+      'ad': bigListStorageBackup
+    }).then((onV) {
+      bigListStorageBackup.clear();
+    });
   }
 
   ///UPLOAD TO FIRE BASE STORAGE
-  Future fileUploadStorage(file, recording) async {
+  Future fileUploadStorage(file, recording, docuId) async {
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
@@ -457,15 +458,24 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     print("File Uploaded == > ${recording.path.toString()}");
 
     ///Delete File
+    ///Set st=0
     await uploadTask.future.whenComplete(() {
       //delete file
       file.deleteSync(recursive: true);
-      print(">>File is DELETED");
+      print(
+          ">>>FILE UPLOADED| LOCAL FILE DELETED |Url array holdings: $bigListStorageBackup");
+
+      if (docuId != 'NoChnageInSt') {
+        Firestore.instance.collection('listP').document(docuId).updateData({
+          'st': 0,
+        }).then((doc) {
+          print('>>st value changed to st=0 ');
+        });
+      }
     });
-    print(">>>FILE UPLOADED| Url array holdings: $bigListStorageBackup");
   }
 
-//SNACKBAR WARNING MORE THAN 40 MB
+  ///SNACKBAR WARNING MORE THAN 40 MB
   snackbarOverSizeWarn(context) {
     Scaffold.of(context).showSnackBar(
           new SnackBar(
@@ -478,7 +488,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         );
   }
 
-//FIRE STORE listP
+  ///FIRE STORE listP
   Future listPEntry(saveAndTranscribe, file, recording) async {
     String usid;
     await auth.currentUser().then((user) {
@@ -492,7 +502,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       "ti": new DateTime.now().millisecondsSinceEpoch,
       "usid": usid,
       "ty": saveAndTranscribe,
-      "st": 0,
+      "st": 1,
       "r-d": storageRedundancyList
     }).then((val) {
       print(">>key ${val.documentID}");
@@ -502,7 +512,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       print("Storage Redun: " + storageRedundancyList.toString());
     });
 
-    await fileUploadStorage(file, recording);
+    await fileUploadStorage(file, recording, docuId);
 
     ///Update the Main counter
     String updateTotalTranscriptionKey;
@@ -520,7 +530,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     await Firestore.instance
         .collection('docsP')
         .document(updateTotalTranscriptionKey)
-        .updateData({'nre': updateTotalRecs + 1,'nrt': updateTotalTrans + saveAndTranscribe});
+        .updateData({
+      'nre': updateTotalRecs + 1,
+      'nrt': updateTotalTrans + saveAndTranscribe
+    });
 
     print(">>ALL DONE WITH");
   }

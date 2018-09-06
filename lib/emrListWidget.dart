@@ -150,8 +150,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 //    print(">>index $index");
     DateTime datStamp = DateTime.fromMillisecondsSinceEpoch(document['ti']);
 
-    //SHOW ENTRY ONLY IF 0,1,2,8
-    //FOR ANY OTHER NUMBER, DONT SHOW
+    ///SHOW ENTRY ONLY IF 0,1,2,8
+    ///FOR ANY OTHER NUMBER, DONT SHOW
     if (document['st'] == 0 ||
         document['st'] == 1 ||
         document['st'] == 2 ||
@@ -190,13 +190,16 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   //saveAndTranscribe = 1 | save and transcribe
 
   //st = 0 | for no conversion
-  //st = 1 | for just name conversion (Unpaid)
+  //st = 1 | for Uploading
   //st = 2 | for complete conversion
-  //st = 0 | for complete conversion with Read/verified
+  //st = 2 | for complete conversion with Read/verified
+  //st = 8 | for complete conversion with Read/verified
 
   ///RENDERS TRAILING
   Widget trailEMRListItem(document) {
     Color colorX;
+
+    ///Logic to calc background color
     if (document['scr'] != null) {
       if (document['scr'] < 60)
         colorX = Colors.red;
@@ -250,7 +253,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     }
   }
 
-  ///renders score info:
+  ///renders score info: Dialogue box
   scoreInfo(document,colorX) {
 
     double percentX= document['scr']/100;
@@ -360,8 +363,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       );
     } else if (document['st'] == 1) {
       return new Icon(
-        Icons.cloud_queue,
-        color: Colors.blueGrey[200],
+        Icons.file_upload,
+        color: Colors.blueGrey[400],
       );
     } else if (document['st'] == 2) {
       return new Icon(
@@ -387,7 +390,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     if (document['st'] == 0) {
       return new Text('Audio Processing..');
     } else if (document['st'] == 1) {
-      return new Text('Audio Saved');
+      return new Text('Uploading Audio..');
     } else if (document['st'] == 2) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -424,7 +427,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       );
     } else if (document['st'] == 1) {
       return new Text(
-        document['nn'] + ' ' + document['ns'],
+        'ID-' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
       );
     } else if (document['st'] == 2) {
