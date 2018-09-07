@@ -192,6 +192,8 @@ class _MainScreenState extends State<MainScreen> {
       try {
         if (await AudioRecorder.hasPermissions) {
 
+          pauseButtonState = 0;
+
           //CREATE DIRECTORY-Path
           Directory appDocDirectory = await getApplicationDocumentsDirectory();
 
@@ -302,8 +304,8 @@ class CounterModel extends Model {
   }
 }
 
-//THIS SHOWS A WARNING NOTIFICATION IF AUDIO INCREASES BEYOND 40 MINS
-//UPLOADS GREATER THAN 40 MB ARE AUTOMATICALLY BLOCKED
+///THIS SHOWS A WARNING NOTIFICATION IF AUDIO INCREASES BEYOND 40 MINS
+///UPLOADS GREATER THAN 40 MB ARE AUTOMATICALLY BLOCKED
 int notificationId;
 _scheduleNotification(int status) async {
   if (status == 1) {

@@ -195,7 +195,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   //st = 1 | for Uploading
   //st = 2 | for complete conversion
   //st = 2 | for complete conversion with Read/verified
-  //st = 8 | for complete conversion with Read/verified
+  //st = 8 | for Transcribing
 
   ///RENDERS TRAILING
   Widget trailEMRListItem(document) {

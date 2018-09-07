@@ -243,7 +243,11 @@ class _EMRPageState extends State<EMRPage> {
 
           _emrPageTileRender("Other Info", document['zz'].toString(),Colors.grey[50]),
 
+          _emrPageTileRender("Special Info", document['spi'].toString(),Colors.red[100]),
+
+
           _emrPageTileRender("Feedback by Doctor", document['fdb'].toString(),Colors.yellowAccent[100]),
+
 
           _emrPageTileRender(" ", ' ',Colors.grey[50]),
 

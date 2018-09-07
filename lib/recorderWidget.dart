@@ -19,6 +19,8 @@ import 'package:flutter/services.dart';
 
 StreamSubscription streamAu;
 
+int pauseButtonState;
+
 class RecorderWidget extends StatefulWidget {
   const RecorderWidget({Key key, this.email});
 
@@ -29,12 +31,11 @@ class RecorderWidget extends StatefulWidget {
 }
 
 class _RecorderWidgetState extends State<RecorderWidget> {
-  int pauseButtonState;
+//  int pauseButtonState;
   AudioCache player = new AudioCache(prefix: 'sounds/');
 
   @override
   initState() {
-    pauseButtonState = 0;
     super.initState();
     initPhCallState();
     player.load('ting2.mp3');
@@ -79,7 +80,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                             onPressed: () {
                               print(">>>>>> jUST SAVE");
                               //for paused state
-                              //only for sdk < 24 to support that resume pause thing
                               if (pauseButtonState == 1) {
                                 Scaffold.of(context).showSnackBar(new SnackBar(
                                       content: new Text(
@@ -260,6 +260,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     sleep(const Duration(milliseconds: 1000));
     setState(() {});
   }
+
+  ///pauseButtonState=0 // pause
 
   Widget pauseButton(model) {
     if (pauseButtonState == 0) {
@@ -556,11 +558,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         //stop
         AudioRecorder.isRecording.then((vol) {
           if (vol == true) {
+
             if (globalRecorderState == 0) {
               print('>>Recorder is Pause--Stopped because of call');
+              pauseButtonState = 1;
               _audioRecorderFunction(2, 0);
               stopWatch.stop();
-              pauseButtonState = 1;
             }
 
             //permit start audio recording
@@ -570,6 +573,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       } else if (event.stateC == 'false') {
         //resume
         if (globalRecorderState == 1) {
+
           if (Theme.of(context).platform == TargetPlatform.android) {
             print('>>Recorder is Resumed because of call | ANDROID');
             _audioRecorderFunction(1, 0);
