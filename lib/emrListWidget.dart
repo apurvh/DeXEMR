@@ -10,14 +10,22 @@ import 'package:dex_for_doctor/emrWidget.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+
+import 'dart:async';
+
+
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
 
 //AFTER CLICKING LIST ICON ON MAIN SCREEN
 class EMRListWidget extends StatefulWidget {
-  const EMRListWidget({Key key, this.email});
+  const EMRListWidget({Key key, this.email, this.analytics, this.observer});
 
   final String email;
+  final FirebaseAnalyticsObserver observer;
+  final FirebaseAnalytics analytics;
 
   @override
   _EMRListWidgetState createState() => new _EMRListWidgetState();
@@ -157,6 +165,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
     if (document['st'] == 0 ||
         document['st'] == 1 ||
         document['st'] == 2 ||
+        document['st'] == 9 ||
+        document['st'] == 10 ||
         document['st'] == 8) {
       return Column(
         children: <Widget>[
@@ -243,6 +253,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
             ),
           ),
           onTap: () {
+            _checkScoreEventLog();
             scoreInfo(document, colorX);
           },
         );
@@ -387,7 +398,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         size: 26.0,
         color: Colors.blueGrey[200],
       );
-    } else if (document['st'] == 8) {
+    } else if (document['st'] == 8 ||document['st'] == 9 || document['st'] == 10) {
       return new Icon(
         Icons.cloud_queue,
         color: Colors.blueGrey[200],
@@ -426,7 +437,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           ),
         ],
       );
-    } else if (document['st'] == 8) {
+    } else if (document['st'] == 8||document['st'] == 9||document['st'] == 10) {
       return new Text('Transcribing..');
     } else {
       return new Text(document['ph'].toString());
@@ -450,7 +461,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
         document['nn'] + ' ' + document['ns'],
         style: TextStyle(fontWeight: FontWeight.bold),
       );
-    } else if (document['st'] == 8) {
+    } else if (document['st'] == 8||document['st'] == 9||document['st'] == 10) {
       return new Text(
         'ID-' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
@@ -465,6 +476,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
 
   onTapEMRListItem(document) {
     if (document['st'] == 2 || document['st'] == 3) {
+      _checkEMREventLog();
       Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
         return new EMRPage(
           name: document['nn'],
@@ -475,6 +487,36 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       }));
     } else {
       print('>>Empty');
+    }
+  }
+
+
+  ///Login Tracking via firebase analytics
+  Future<Null> _checkScoreEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'checkScore',
+      );
+      print('logEvent-_checkScoreEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
+  ///Login Tracking via firebase analytics
+  Future<Null> _checkEMREventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'checkEMR',
+      );
+      print('logEvent-_checkEMREventLog succeeded | ${new DateTime.now()}');
     }
   }
 }

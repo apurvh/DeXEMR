@@ -5,6 +5,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:dex_for_doctor/mainScreen.dart';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+
 final auth = FirebaseAuth.instance;
 final googleSignIn = new GoogleSignIn();
 
@@ -15,6 +18,10 @@ int googleSilentChecker = 0;
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
+  static FirebaseAnalytics analytics = new FirebaseAnalytics();
+  static FirebaseAnalyticsObserver observer =
+      new FirebaseAnalyticsObserver(analytics: analytics);
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -22,20 +29,35 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.teal,
       ),
-      home: new MyHomePage(title: 'DeX - EMR'),
+      home: new MyHomePage(
+        title: 'DeX - EMR',
+        analytics: analytics,
+        observer: observer,
+      ),
       debugShowCheckedModeBanner: false,
+      navigatorObservers: <NavigatorObserver>[observer],
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, this.analytics, this.observer})
+      : super(key: key);
+
   final String title;
+  final FirebaseAnalytics analytics;
+  final FirebaseAnalyticsObserver observer;
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState(analytics, observer);
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  _MyHomePageState(this.analytics, this.observer);
+  final FirebaseAnalyticsObserver observer;
+  final FirebaseAnalytics analytics;
+
   @override
   Widget build(BuildContext context) {
     print("GoogleSignIn: " + googleSignIn.currentUser.toString());
@@ -45,6 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       return new MainScreen(
         email: _emailID,
+        analytics: analytics,
+        observer: observer,
       );
     }
   }
@@ -114,7 +138,7 @@ class _LoginWidgetState extends State<LoginWidget> {
 //                ),
 //              ),
               new Padding(
-                padding: const EdgeInsets.only(top: 330.0,left: 12.0),
+                padding: const EdgeInsets.only(top: 330.0, left: 12.0),
                 child: buttonThatControlsLoginGoogle(),
               ),
             ],

@@ -6,14 +6,22 @@ import 'dart:async';
 //import 'package:share/share.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
+//import 'package:firebase_auth/firebase_auth.dart';
+
+
 //THIS RENDERS EMR
 class EMRPage extends StatefulWidget {
-  const EMRPage({Key key, this.name, this.sname, this.phnumber, this.usid});
+  const EMRPage({Key key, this.name, this.sname, this.phnumber, this.usid, this.analytics, this.observer});
 
   final String usid;
   final String name;
   final String sname;
   final String phnumber;
+
+  final FirebaseAnalyticsObserver observer;
+  final FirebaseAnalytics analytics;
 
   @override
   _EMRPageState createState() => new _EMRPageState();
@@ -22,12 +30,21 @@ class EMRPage extends StatefulWidget {
 class _EMRPageState extends State<EMRPage> {
   AudioPlayer audioPlayer = new AudioPlayer();
 
-  var referenceToEMR;
+
+  PageController pageXController;
+  int currentPage = 0;
+  int countPage;
+
+//  var referenceToEMR;
   BuildContext cccContext;
   @override
   void initState() {
-
     super.initState();
+    pageXController = new PageController(
+      initialPage: currentPage,
+      keepPage: false,
+      viewportFraction: 0.9,
+    );
   }
 
   @override
@@ -38,7 +55,7 @@ class _EMRPageState extends State<EMRPage> {
         leading: new IconButton(
             icon: new Icon(Icons.close),
             onPressed: () {
-              if (audioFileWidgetState == 1) stopSound();
+//              if (audioFileWidgetState == 1) stopSound();
               Navigator.pop(context);
             }),
         title:
@@ -52,7 +69,81 @@ class _EMRPageState extends State<EMRPage> {
               })
         ],
       ),
-      body: Builder(builder: (context){
+      body:
+
+      new Center(
+        child: new Container(
+          color: Colors.blueGrey[50],
+          child: new PageView.builder(
+              onPageChanged: (value) {
+                setState(() {
+                  currentPage = value;
+                });
+              },
+              controller: pageXController,
+              itemCount: countPage,
+              itemBuilder: (context, index)=>builderX(index)
+
+          ),
+        ),
+      ),
+
+//      Builder(builder: (context){
+//        cccContext=context;
+//        return new Column(
+//          children: <Widget>[
+//            new StreamBuilder(
+//              stream: Firestore.instance
+//                  .collection("ptsP")
+//                  .where('usid', isEqualTo: widget.usid)
+//                  .where('nn', isEqualTo: widget.name)
+//                  .where('ns', isEqualTo: widget.sname)
+//                  .where('ph', isEqualTo: widget.phnumber)
+//                  .snapshots(),
+//              builder: (context, snapshot) {
+//                if (!snapshot.hasData)
+//                  return Center(child: Center(child: const Text("Loading..")));
+//                return _emrPageRender(context, snapshot.data.documents[0]);
+//              },
+//            ),
+//          ],
+//        );
+//      }),
+
+
+      floatingActionButton: feedBackButton(),
+    );
+  }
+
+
+  ///build Carausal
+  builderX(int index) {
+    return new AnimatedBuilder(
+      animation: pageXController,
+      builder: (context, child) {
+        double value = 1.0;
+        if (pageXController.position.haveDimensions) {
+          value = pageXController.page - index;
+          value = (1 - (value.abs() * .2)).clamp(0.0, 1.0);
+        }
+        print('value $value');
+        return new Center(
+          child: new SizedBox(
+            height: Curves.easeOut.transform(value) * 800,
+            width: Curves.easeOut.transform(value) * 500,
+            child: child,
+          ),
+        );
+      },
+      child: new Container(
+        margin: const EdgeInsets.only(right: 10.0,top: 5.0,bottom: 5.0),
+        decoration: new BoxDecoration(
+          boxShadow: [BoxShadow(color: Colors.teal,blurRadius: 0.0,spreadRadius: 0.0)],
+
+        ),
+        child:
+
+        Builder(builder: (context){
         cccContext=context;
         return new Column(
           children: <Widget>[
@@ -67,19 +158,23 @@ class _EMRPageState extends State<EMRPage> {
               builder: (context, snapshot) {
                 if (!snapshot.hasData)
                   return Center(child: Center(child: const Text("Loading..")));
-                return _emrPageRender(context, snapshot.data.documents[0]);
+                countPage=snapshot.data.documents.length;
+                print('countPage : $countPage');
+                return _emrPageRender(context, snapshot.data.documents[currentPage]);
               },
             ),
           ],
         );
       }),
-      floatingActionButton: feedBackButton(),
+
+      ),
     );
   }
 
+
   Widget feedBackButton(){
-    if(true)
-    return RawMaterialButton(onPressed: (){feedBackDoctor();},
+    if(currentPage==0)
+    return RawMaterialButton(onPressed: (){feedBackDoctor();_verifyEventLog();},
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -263,7 +358,7 @@ class _EMRPageState extends State<EMRPage> {
     }
     else {
       return Padding(
-        padding: const EdgeInsets.all(0.0),
+        padding: const EdgeInsets.only(left: 4.0),
         child: Container(
           decoration: BoxDecoration(
             color: bcolor
@@ -282,6 +377,7 @@ class _EMRPageState extends State<EMRPage> {
                     color: Colors.teal,
                     fontSize: 14.0,
                   ),
+                  textAlign: TextAlign.center,
                 ),
                 new Text(
                   content,
@@ -295,145 +391,156 @@ class _EMRPageState extends State<EMRPage> {
     }
   }
 
-  //share button email
-//  Future shareButton() async {
-//    Map shareData;
-//    List shareDataList;
-//    String shareDataText = "Medical Records of ${widget.patientCode} : \n\n";
-//    await FirebaseDatabase.instance
-//        .reference()
-//        .child("DeXAutoCollect")
-//        .child("EMR")
-//        .child(widget.email.replaceAll(".", " "))
-//        .child(widget.patientCode)
-//        .once()
-//        .then((DataSnapshot snap) {
-//      print("shareData====>>>>${snap.value}");
-//      shareData = snap.value;
-//      shareDataList = shareData.values.toList();
-//      print("shareDataList====>>>>${shareDataList}");
-//    });
-//    for (var i = 0; i < shareDataList.length - 1; i++) {
-//      print("==============>${shareDataList[i]["head"]}");
-//      String shareDataTextloopHead;
-//      String shareDataTextloopCon;
 //
-//      shareDataTextloopHead = shareDataList[i]["head"].toString();
-//      shareDataTextloopCon = shareDataList[i]["con"].toString();
+//  //share button email
+////  Future shareButton() async {
+////    Map shareData;
+////    List shareDataList;
+////    String shareDataText = "Medical Records of ${widget.patientCode} : \n\n";
+////    await FirebaseDatabase.instance
+////        .reference()
+////        .child("DeXAutoCollect")
+////        .child("EMR")
+////        .child(widget.email.replaceAll(".", " "))
+////        .child(widget.patientCode)
+////        .once()
+////        .then((DataSnapshot snap) {
+////      print("shareData====>>>>${snap.value}");
+////      shareData = snap.value;
+////      shareDataList = shareData.values.toList();
+////      print("shareDataList====>>>>${shareDataList}");
+////    });
+////    for (var i = 0; i < shareDataList.length - 1; i++) {
+////      print("==============>${shareDataList[i]["head"]}");
+////      String shareDataTextloopHead;
+////      String shareDataTextloopCon;
+////
+////      shareDataTextloopHead = shareDataList[i]["head"].toString();
+////      shareDataTextloopCon = shareDataList[i]["con"].toString();
+////
+////      //Remove Blanks
+////      if (shareDataTextloopCon == "") {
+////      } else {
+////        shareDataText = shareDataText +
+////            shareDataTextloopHead +
+////            ": " +
+////            shareDataTextloopCon +
+////            "\n\n";
+////      }
+////    }
+////    print("Snap value: ==>> $shareDataText");
+////    Share.share(shareDataText);
+////  }
 //
-//      //Remove Blanks
-//      if (shareDataTextloopCon == "") {
-//      } else {
-//        shareDataText = shareDataText +
-//            shareDataTextloopHead +
-//            ": " +
-//            shareDataTextloopCon +
-//            "\n\n";
-//      }
-//    }
-//    print("Snap value: ==>> $shareDataText");
-//    Share.share(shareDataText);
+//  int audioFileWidgetState = 0;
+//  Future<Null> playSound(audioUrl) async {
+//    await audioPlayer.play(audioUrl);
 //  }
+//
+//  Future<Null> stopSound() async {
+//    await audioPlayer.stop();
+//  }
+//
+//  Widget audioFileWidget(snapshot) {
+//    if (audioFileWidgetState == 0) {
+//      return new FlatButton.icon(
+//        icon: new Icon(
+//          Icons.play_circle_outline,
+//          size: 40.0,
+//          color: Colors.blueGrey,
+//        ),
+//        label: new Text("Play"),
+//        onPressed: () {
+//          print("Audio File plaiyng: " + snapshot.value["con"]);
+//          playSound(snapshot.value["con"]);
+//          audioFileWidgetState = 1;
+//          setState(() {});
+//        },
+//      );
+//    } else {
+//      return new FlatButton.icon(
+//        icon: new Icon(
+//          Icons.stop,
+//          size: 40.0,
+//          color: Colors.blueGrey,
+//        ),
+//        label: new Text("Stop"),
+//        onPressed: () {
+//          stopSound();
+//          audioFileWidgetState = 0;
+//          setState(() {});
+//        },
+//      );
+//    }
+//  }
+//
+//  //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
+///*  Widget textRenderForEMR(snapshot) {
+//    if (snapshot.value["head"].toString() == "DATE") {
+//      return new Padding(
+//        padding: const EdgeInsets.all(8.0),
+//        child: new Center(
+//          child: new Text(
+//            "------ " + snapshot.value["con"] + " ------",
+//            style: new TextStyle(color: Colors.grey[500]),
+//          ),
+//        ),
+//      );
+//    } else if (snapshot.value["head"].toString() == "AUDI") {
+//      return new Padding(
+//        padding: const EdgeInsets.only(top: 10.0, bottom: 20.0, left: 10.0),
+//        child: new Column(
+//          children: <Widget>[
+//            new Row(
+//              children: <Widget>[
+//                new Text(
+//                  "AUDIO FILE",
+//                  style: new TextStyle(
+//                      fontWeight: FontWeight.bold,
+//                      color: Colors.teal,
+//                      fontSize: 14.0),
+//                ),
+//              ],
+//            ),
+//            audioFileWidget(snapshot),
+//          ],
+//        ),
+//      );
+//    } else if (snapshot.value["con"].toString() != "") {
+//      return new Container(
+//        child: new Padding(
+//          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+//          child: new Column(
+//            mainAxisAlignment: MainAxisAlignment.start,
+//            crossAxisAlignment: CrossAxisAlignment.start,
+//            children: <Widget>[
+//              new Text(
+//                snapshot.value["head"],
+//                style: new TextStyle(
+//                    fontWeight: FontWeight.bold,
+//                    color: Colors.teal,
+//                    fontSize: 14.0),
+//              ),
+//              new Text(
+//                snapshot.value["con"].toString(),
+//                style: new TextStyle(fontSize: 18.0),
+//              )
+//            ],
+//          ),
+//        ),
+//      );
+//    } else {
+//      return new Container();
+//    }
+//  }*/
+//
+  ///Login Tracking via firebase analytics
+  Future<Null> _verifyEventLog() async {
 
-  int audioFileWidgetState = 0;
-  Future<Null> playSound(audioUrl) async {
-    await audioPlayer.play(audioUrl);
-  }
-
-  Future<Null> stopSound() async {
-    await audioPlayer.stop();
-  }
-
-  Widget audioFileWidget(snapshot) {
-    if (audioFileWidgetState == 0) {
-      return new FlatButton.icon(
-        icon: new Icon(
-          Icons.play_circle_outline,
-          size: 40.0,
-          color: Colors.blueGrey,
-        ),
-        label: new Text("Play"),
-        onPressed: () {
-          print("Audio File plaiyng: " + snapshot.value["con"]);
-          playSound(snapshot.value["con"]);
-          audioFileWidgetState = 1;
-          setState(() {});
-        },
+      await widget.analytics.logEvent(
+        name: 'verifyAndFeedback',
       );
-    } else {
-      return new FlatButton.icon(
-        icon: new Icon(
-          Icons.stop,
-          size: 40.0,
-          color: Colors.blueGrey,
-        ),
-        label: new Text("Stop"),
-        onPressed: () {
-          stopSound();
-          audioFileWidgetState = 0;
-          setState(() {});
-        },
-      );
+      print('logEvent-_verifyEventLog succeeded | ${new DateTime.now()}');
     }
-  }
 
-  //RENDER EMR UNITS NORMALLY OR DON'T SHOW THEM IF UNIT IS NULL
-/*  Widget textRenderForEMR(snapshot) {
-    if (snapshot.value["head"].toString() == "DATE") {
-      return new Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: new Center(
-          child: new Text(
-            "------ " + snapshot.value["con"] + " ------",
-            style: new TextStyle(color: Colors.grey[500]),
-          ),
-        ),
-      );
-    } else if (snapshot.value["head"].toString() == "AUDI") {
-      return new Padding(
-        padding: const EdgeInsets.only(top: 10.0, bottom: 20.0, left: 10.0),
-        child: new Column(
-          children: <Widget>[
-            new Row(
-              children: <Widget>[
-                new Text(
-                  "AUDIO FILE",
-                  style: new TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.teal,
-                      fontSize: 14.0),
-                ),
-              ],
-            ),
-            audioFileWidget(snapshot),
-          ],
-        ),
-      );
-    } else if (snapshot.value["con"].toString() != "") {
-      return new Container(
-        child: new Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
-          child: new Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Text(
-                snapshot.value["head"],
-                style: new TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.teal,
-                    fontSize: 14.0),
-              ),
-              new Text(
-                snapshot.value["con"].toString(),
-                style: new TextStyle(fontSize: 18.0),
-              )
-            ],
-          ),
-        ),
-      );
-    } else {
-      return new Container();
-    }
-  }*/
 }

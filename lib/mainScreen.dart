@@ -13,10 +13,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-//import 'package:simple_permissions/simple_permissions.dart';
+import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 
 int globalRecorderState=0;
 
@@ -26,9 +28,11 @@ List<String> bigListStorageBackup = [];
 var stopWatch = new Stopwatch();
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key key, this.email});
+  const MainScreen({Key key, this.email, this.analytics, this.observer});
 
   final String email;
+  final FirebaseAnalyticsObserver observer;
+  final FirebaseAnalytics analytics;
 
   @override
   _MainScreenState createState() => new _MainScreenState();
@@ -37,7 +41,11 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   BuildContext contextForRecorder;
 
-
+  @override
+  void initState() {
+    _appLogInEventLog();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +63,7 @@ class _MainScreenState extends State<MainScreen> {
             new IconButton(
               icon: new Icon(Icons.search),
               onPressed: () {
+                _searchPEventLog();
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -66,6 +75,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             RaisedButton.icon(
               onPressed: () {
+                _insightsEventLog();
                 Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
                   return new InsightsData();
                 }));
@@ -105,11 +115,14 @@ class _MainScreenState extends State<MainScreen> {
     } else {
       return new RecorderWidget(
         email: widget.email,
+        analytics: widget.analytics,
+        observer: widget.observer,
       );
     }
   }
 
   Widget renderFloatingActionButton(model) {
+    _newRecordingEventLog();
     if (model.counter == 1) {
       return Container();
     } else {
@@ -154,10 +167,10 @@ class _MainScreenState extends State<MainScreen> {
       if(Theme.of(context).platform == TargetPlatform.android)
         {
           print('Andriod My Man');
-//          await SimplePermissions.requestPermission(Permission.RecordAudio);
-//          await SimplePermissions
-//              .requestPermission(Permission.WriteExternalStorage);
-//          await phStatePermissionFunc();
+          await SimplePermissions.requestPermission(Permission.RecordAudio);
+          await SimplePermissions
+              .requestPermission(Permission.WriteExternalStorage);
+          await phStatePermissionFunc();
         }
       if(Theme.of(context).platform == TargetPlatform.iOS)
         print('>>iOS is the Platfrom My Man');
@@ -258,6 +271,64 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {});
   }
 
+  ///Login Tracking via firebase analytics
+  Future<Null> _appLogInEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'appLogIn',
+        parameters: <String, dynamic>{
+          'usid': usid,
+        },
+      );
+      print('logEvent-appLogIn succeeded | ${new DateTime.now()}');
+    }
+  }
+  ///Login Tracking via firebase analytics
+  Future<Null> _newRecordingEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'newRecording',
+      );
+      print('logEvent-_newRecordingEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
+
+  Future<Null> _insightsEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'insights',
+      );
+      print('logEvent-_insightsEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
+  Future<Null> _searchPEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'searchP',
+      );
+      print('logEvent-_searchPEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
 
 }
 

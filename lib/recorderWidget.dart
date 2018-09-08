@@ -3,7 +3,7 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:dex_for_doctor/mainScreen.dart';
 import 'package:dex_for_doctor/main.dart';
 
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -13,18 +13,23 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:phone_state_i/phone_state_i.dart';
-import 'package:audioplayers/audioplayers.dart';
+//import 'package:audioplayers/audioplayers.dart';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:flutter/services.dart';
+
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 
 StreamSubscription streamAu;
 
 int pauseButtonState;
 
 class RecorderWidget extends StatefulWidget {
-  const RecorderWidget({Key key, this.email});
+  const RecorderWidget({Key key, this.email, this.analytics, this.observer});
 
   final String email;
+  final FirebaseAnalyticsObserver observer;
+  final FirebaseAnalytics analytics;
 
   @override
   _RecorderWidgetState createState() => _RecorderWidgetState();
@@ -79,6 +84,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                       builder: (context, child, model) => new RawMaterialButton(
                             onPressed: () {
                               print(">>>>>> jUST SAVE");
+                              _justSaveEventLog(stopWatch.elapsedMicroseconds);
+
                               //for paused state
                               if (pauseButtonState == 1) {
                                 Scaffold.of(context).showSnackBar(new SnackBar(
@@ -145,6 +152,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                       builder: (context, child, model) => new RawMaterialButton(
                             onPressed: () {
                               print(">>>>>> SAVE AND SEND TO TRANSCRIPTION");
+                              _saveAndTransEventLog(stopWatch.elapsedMicroseconds);
                               //for paused state
                               if (pauseButtonState == 1) {
                                 Scaffold.of(context).showSnackBar(new SnackBar(
@@ -413,6 +421,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       }
 
       globalRecorderState = 0;
+
     }
   }
 
@@ -586,5 +595,41 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         }
       }
     });
+  }
+
+  ///Login Tracking via firebase analytics
+  Future<Null> _justSaveEventLog(time) async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'justSave',
+        parameters: <String, dynamic>{
+          'time': time,
+        },
+      );
+      print('logEvent-_justSaveEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
+
+  ///Login Tracking via firebase analytics
+  Future<Null> _saveAndTransEventLog(time) async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+      await widget.analytics.logEvent(
+        name: 'saveAndTrans',
+        parameters: <String, dynamic>{
+          'time': time,
+        },
+      );
+      print('logEvent-_saveAndTransEventLog succeeded | ${new DateTime.now()}');
+    }
   }
 }
