@@ -523,12 +523,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       print("Storage Redun: " + storageRedundancyList.toString());
     });
 
-    await fileUploadStorage(file, recording, docuId);
-
     ///Update the Main counter
     String updateTotalTranscriptionKey;
     int updateTotalRecs;
     int updateTotalTrans;
+    int updateTotalTime;
+
     await Firestore.instance
         .collection('docsP')
         .where('usid', isEqualTo: usid)
@@ -536,6 +536,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .then((d) {
       updateTotalRecs = d.documents[0]['nre'];
       updateTotalTrans = d.documents[0]['nrt'];
+      updateTotalTime = d.documents[0]['nrm'];
       updateTotalTranscriptionKey = d.documents[0].documentID;
     });
     await Firestore.instance
@@ -543,8 +544,12 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .document(updateTotalTranscriptionKey)
         .updateData({
       'nre': updateTotalRecs + 1,
-      'nrt': updateTotalTrans + saveAndTranscribe
+      'nrt': updateTotalTrans + saveAndTranscribe,
+      'nrm':updateTotalTime + stopWatch.elapsed.inMinutes+1,
     });
+
+    stopWatch.reset();
+    await fileUploadStorage(file, recording, docuId);
 
     print(">>ALL DONE WITH");
   }

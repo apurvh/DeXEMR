@@ -13,7 +13,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:audio_recorder/audio_recorder.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:simple_permissions/simple_permissions.dart';
+//import 'package:simple_permissions/simple_permissions.dart';
 import 'package:scheduled_notifications/scheduled_notifications.dart';
 import 'package:dex_for_doctor/searchF.dart';
 
@@ -96,7 +96,7 @@ class _MainScreenState extends State<MainScreen> {
                     renderRecordWidget(model.counter),
               ),
               Expanded(
-                child: new EMRListWidget(email: _emailID),
+                child: new EMRListWidget(email: _emailID,analytics: widget.analytics,observer: widget.observer,),
               ),
             ],
           );
@@ -122,10 +122,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget renderFloatingActionButton(model) {
-    _newRecordingEventLog();
+
     if (model.counter == 1) {
       return Container();
     } else {
+
       return new Container(
         decoration: new BoxDecoration(
             shape: BoxShape.circle,
@@ -137,6 +138,7 @@ class _MainScreenState extends State<MainScreen> {
         padding: const EdgeInsets.all(5.0),
         child: new RawMaterialButton(
           onPressed: () {
+            _newRecordingEventLog();
             renderFloatingActionButtonFunction(model);
           },
           padding: const EdgeInsets.all(30.0),
@@ -167,10 +169,10 @@ class _MainScreenState extends State<MainScreen> {
       if(Theme.of(context).platform == TargetPlatform.android)
         {
           print('Andriod My Man');
-          await SimplePermissions.requestPermission(Permission.RecordAudio);
-          await SimplePermissions
-              .requestPermission(Permission.WriteExternalStorage);
-          await phStatePermissionFunc();
+//          await SimplePermissions.requestPermission(Permission.RecordAudio);
+//          await SimplePermissions
+//              .requestPermission(Permission.WriteExternalStorage);
+//          await phStatePermissionFunc();
         }
       if(Theme.of(context).platform == TargetPlatform.iOS)
         print('>>iOS is the Platfrom My Man');
@@ -368,7 +370,7 @@ class CounterModel extends Model {
     _scheduleNotification(0);
     _counter = 0;
     stopWatch.stop();
-    stopWatch.reset();
+//    stopWatch.reset();
 
     // Then notify all the listeners.
     notifyListeners();

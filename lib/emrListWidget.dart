@@ -483,6 +483,8 @@ class _EMRListWidgetState extends State<EMRListWidget> {
           sname: document['ns'],
           phnumber: document['ph'],
           usid: document['usid'],
+          analytics: widget.analytics,
+          observer: widget.observer,
         );
       }));
     } else {

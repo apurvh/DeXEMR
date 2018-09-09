@@ -43,7 +43,7 @@ class _EMRPageState extends State<EMRPage> {
     pageXController = new PageController(
       initialPage: currentPage,
       keepPage: false,
-      viewportFraction: 0.9,
+      viewportFraction: 0.95,
     );
   }
 
