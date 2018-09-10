@@ -62,11 +62,20 @@ class _EMRPageState extends State<EMRPage> {
             new Text(widget.name + ' ' + widget.sname),
         automaticallyImplyLeading: false,
         actions: <Widget>[
+          ///ADDING number of transcription
+//          Padding(
+//            padding: const EdgeInsets.symmetric(vertical: 18.0),
+//            child: new Text(
+//              (currentPage+1).toString()+"/"+countPage.toString(),
+//              style: TextStyle(color: Colors.white),
+//            ),
+//          ),
           new IconButton(
               icon: new Icon(Icons.share),
               onPressed: () {
 //                shareButton();
-              })
+              }),
+
         ],
       ),
       body:
@@ -174,7 +183,7 @@ class _EMRPageState extends State<EMRPage> {
 
   Widget feedBackButton(){
     if(currentPage==0)
-    return RawMaterialButton(onPressed: (){feedBackDoctor();_verifyEventLog();},
+    return RawMaterialButton(onPressed: (){feedbackDoctorRoute();_verifyEventLog();},
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
@@ -191,22 +200,64 @@ class _EMRPageState extends State<EMRPage> {
   ///ADD FEEDBACK TEXT FBK BY DOCTOR
   ///ADD ACCURACY FEEDBACK BY DOCTOR
   TextEditingController feedbackController = new TextEditingController();
-  feedBackDoctor(){
-    return showDialog(
-      barrierDismissible: false,
-      context: context,
-      child: new AlertDialog(
-        title: Text(
-          'Verify/Feedback',
+
+
+
+  feedbackDoctorRoute(){
+    Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+      return new Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.only(top: 30.0),
+          child: Column(
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('  Verify/Corrections',style: TextStyle(fontWeight: FontWeight.bold),),
+                  IconButton(icon: Icon(Icons.close), onPressed: () {
+                    Navigator.pop(context);
+                  })
+                ],
+              ),
+              Divider(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: new LoadListOfHeading(name: widget.name,sname: widget.sname,phnumber: widget.phnumber,usid: widget.usid,currentPage: currentPage,),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: collectFF(),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: RaisedButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Submit')),
+              ),
+            ],
+          ),
         ),
-        content: collectFF(),
-        actions: <Widget>[
-          FlatButton(onPressed: (){Navigator.pop(context);}, child: Text('Not now')),
-          FlatButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Submit')),
-        ],
-      ),
-    );
+      );
+    }));
   }
+
+
+
+
+//  feedBackDoctor(){
+//    return showDialog(
+//      barrierDismissible: false,
+//      context: context,
+//      child: new AlertDialog(
+//        title: Text(
+//          'Verify/Feedback',
+//        ),
+//        content: collectFF(),
+//        actions: <Widget>[
+//          FlatButton(onPressed: (){Navigator.pop(context);}, child: Text('Not now')),
+//          FlatButton(onPressed: (){feedBackSubmit();Navigator.pop(context);}, child: Text('Submit')),
+//        ],
+//      ),
+//    );
+//  }
 
   Widget collectFF(){
     return Column(
@@ -217,11 +268,11 @@ class _EMRPageState extends State<EMRPage> {
 //        Text('Feedback: '),
         new TextFormField(
           decoration: new InputDecoration(
-            labelText: 'Add any corrections',
+            labelText: 'Add any corrections here...',
           ),
           keyboardType: TextInputType.multiline,
           controller: feedbackController,
-          maxLines: 2,
+          maxLines: 8,
         ),
 //        Divider(),
         Padding(
@@ -351,7 +402,7 @@ class _EMRPageState extends State<EMRPage> {
     );
   }
 
-  ///TODO check whther content '' is sufficient
+  ///TODO check whether content '' is sufficient
   _emrPageTileRender(heading, content,bcolor) {
     if (content == "null" || content==''){
       return Container();
@@ -544,3 +595,95 @@ class _EMRPageState extends State<EMRPage> {
     }
 
 }
+
+
+class LoadListOfHeading extends StatefulWidget {
+
+  const LoadListOfHeading({Key key,  this.name, this.sname, this.phnumber, this.usid,this.currentPage});
+
+  final String usid;
+  final String name;
+  final String sname;
+  final String phnumber;
+  final int currentPage;
+
+
+  @override
+  _LoadListOfHeadingState createState() => _LoadListOfHeadingState();
+}
+
+class _LoadListOfHeadingState extends State<LoadListOfHeading> {
+
+  List<String> loadSuggestionsList=['Loading'];
+
+  @override
+  void initState() {
+    loadSuggestions();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Text(
+          'Following Data can be added: '+loadSuggestionsList.toString(),
+          style: TextStyle(color: Colors.teal),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Divider(),
+        ),
+      ],
+    );
+  }
+
+  int loadSuggestionsApproval = 0;
+  int setStateO = 0;
+  loadSuggestions() async {
+    print("....loadSuggestions Running");
+    await Firestore.instance
+        .collection('ptsP')
+        .where('usid', isEqualTo: widget.usid)
+        .where('nn', isEqualTo: widget.name)
+        .where('ns', isEqualTo: widget.sname)
+        .where('ph', isEqualTo: widget.phnumber)
+        .getDocuments()
+        .then((doc) {
+          loadSuggestionsList.clear();
+      print('....${doc.documents[0].data}');
+      if (doc.documents[widget.currentPage]['dy'] == null) loadSuggestionsList.add('Age');
+      if (doc.documents[widget.currentPage]['cc'] == '')
+        loadSuggestionsList.add('Chief Complaint');
+
+      if (doc.documents[widget.currentPage]['ha'] == '')
+        loadSuggestionsList.add('Present History');
+      if (doc.documents[widget.currentPage]['hb'] == '') loadSuggestionsList.add('Past History');
+      if (doc.documents[widget.currentPage]['hc'] == '')
+        loadSuggestionsList.add('Family History');
+      if (doc.documents[widget.currentPage]['hd'] == '') loadSuggestionsList.add('Drug History');
+      if (doc.documents[widget.currentPage]['he'] == '')
+        loadSuggestionsList.add('Allergy History');
+      if (doc.documents[widget.currentPage]['hf'] == '') loadSuggestionsList.add('Addictions');
+
+      if (doc.documents[widget.currentPage]['el'] == '')
+        loadSuggestionsList.add('Local Examiniation');
+
+      if (doc.documents[widget.currentPage]['di'] == '') loadSuggestionsList.add('Diagnosis');
+      if (doc.documents[widget.currentPage]['id'] == '')
+        loadSuggestionsList.add('Investigations Done');
+
+      if (doc.documents[widget.currentPage]['tp'] == '')
+        loadSuggestionsList.add('Treatment Plan');
+      if (doc.documents[widget.currentPage]['co'] == '') loadSuggestionsList.add('Counselling');
+
+      if (doc.documents[widget.currentPage]['fdb'] == null) loadSuggestionsApproval = 1;
+    });
+
+    if (setStateO == 0)
+      setState(() {
+        setStateO = 1;
+      });
+  }
+}
+
