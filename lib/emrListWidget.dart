@@ -376,7 +376,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   Widget leadingEMRListItem(document) {
     if (document['st'] == 0) {
       return new Icon(
-        Icons.cloud_queue,
+        Icons.cloud_done,
         color: Colors.blueGrey[200],
       );
     } else if (document['st'] == 1) {
@@ -400,7 +400,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       );
     } else if (document['st'] == 8 ||document['st'] == 9 || document['st'] == 10) {
       return new Icon(
-        Icons.cloud_queue,
+        Icons.cloud_done,
         color: Colors.blueGrey[200],
       );
     } else {
@@ -448,12 +448,12 @@ class _EMRListWidgetState extends State<EMRListWidget> {
   Widget titleEMRListItem(document) {
     if (document['st'] == 0) {
       return new Text(
-        'ID-' + document['ti'].toString(),
+        'ID' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
       );
     } else if (document['st'] == 1) {
       return new Text(
-        'ID-' + document['ti'].toString(),
+        'ID' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
       );
     } else if (document['st'] == 2) {
@@ -463,7 +463,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       );
     } else if (document['st'] == 8||document['st'] == 9||document['st'] == 10) {
       return new Text(
-        'ID-' + document['ti'].toString(),
+        'ID' + document['ti'].toString(),
         style: TextStyle(fontWeight: FontWeight.bold),
       );
     } else {

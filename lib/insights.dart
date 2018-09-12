@@ -23,14 +23,22 @@ class _InsightsDataState extends State<InsightsData> {
 
   double percentSVT=0.0;
 
+  MediaQueryData queryData;
+
   @override
   void initState() {
+
 //    loadingInsights();
     super.initState();
   }
   
   @override
   Widget build(BuildContext context) {
+
+    queryData=MediaQuery.of(context);
+    print('....queryData.textScaleFactor ${queryData.textScaleFactor}');
+    double textScale = queryData.textScaleFactor;
+
     loadingInsights();
     return Scaffold(
       body: Padding(
@@ -48,94 +56,139 @@ class _InsightsDataState extends State<InsightsData> {
             ),
             Divider(),
             Card(
-              color: Colors.grey[50],
+              color: Colors.white,
               elevation: 1.0,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(30.0,10.0,30.0,10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0.0,0.0,25.0,0.0),
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(25.0,15.0,25.0,10.0),
                       child: new CircularPercentIndicator(
-                        radius: 120.0,
-                        lineWidth: 13.0,
+                        backgroundColor: Colors.grey[100],
+                        fillColor: Colors.white,
+                        radius: 80.0,
+                        lineWidth: 10.0,
                         animation: true,
                         percent: percentSVT.floor()/100,
                         center: new Text(
                           percentSVT.toStringAsPrecision(3)+'%',
                           style:
-                          new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-                        ),
-                        footer: new Text(
-                          '% Transcribed',
-                          style:
-                          new TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                          new TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0),
                         ),
                         circularStrokeCap: CircularStrokeCap.round,
                         progressColor: Colors.purple,
                       ),
                     ),
-                    Column(
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Icon(Icons.stop,color: Colors.blueGrey[100],),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0),
+                        child: Icon(Icons.stop,color: Colors.purple,),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-
-                        Text(
-                          'Total Records:',
-                          style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.blueGrey[300],
-                              fontWeight: FontWeight.normal),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0.0,8.0,18.0,3.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text('Total Records:',
+                                style: TextStyle(
+                                    fontSize: 14.0/textScale,
+                                    color: Colors.blueGrey[400],
+                                    fontWeight: FontWeight.normal),
+                              ),
+                              Text(savedRecords.toString(),
+                                style: TextStyle(
+                                    fontSize: 20.0/textScale,
+                                    color: Colors.blueGrey[600],
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          savedRecords.toString(),
-                          style: TextStyle(
-                              fontSize: 50.0,
-                              color: Colors.blueGrey[600],
-                              fontWeight: FontWeight.bold),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0.0,3.0,18.0,8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text('Transcribed:',
+                                style: TextStyle(
+                                    fontSize: 14.0/textScale,
+                                    color: Colors.blueGrey[400],
+                                    fontWeight: FontWeight.normal),
+                              ),
+                              Text(savedNTransRecords.toString(),
+                                style: TextStyle(
+                                    fontSize: 20.0/textScale,
+                                    color: Colors.blueGrey[600],
+                                    fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
                         ),
-                        Text(
-                          'Transcribed:',
-                          style: TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.blueGrey[300],
-                              fontWeight: FontWeight.normal),
-                        ),
-                        Text(
-                          savedNTransRecords.toString(),
-                          style: TextStyle(
-                              fontSize: 50.0,
-                              color: Colors.blueGrey[600],
-                              fontWeight: FontWeight.bold),
-                        ),
-
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Card(
-              color: Colors.grey[50],
+              color: Colors.white,
               elevation: 1.0,
-              child: Padding(
-                padding: const EdgeInsets.all(18.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: <Widget>[
-                    Text('Minutes Captured: ',
-                      style: TextStyle(
-                          fontSize: 14.0,
-                          color: Colors.blueGrey[300],
-                          fontWeight: FontWeight.normal),
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18.0,18.0,18.0,3.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('Time Captured(Mins): ',
+                          style: TextStyle(
+                              fontSize: 14.0/textScale,
+                              color: Colors.blueGrey[400],
+                              fontWeight: FontWeight.normal),
+                        ),
+                        Text(minutesCap.toString(),
+                          style: TextStyle(
+                              fontSize: 30.0/textScale,
+                              color: Colors.blueGrey[600],
+                              fontWeight: FontWeight.normal),
+                        ),
+                      ],
                     ),
-                    Text(minutesCap.toString(),
-                      style: TextStyle(
-                          fontSize: 34.0,
-                          color: Colors.blueGrey[600],
-                          fontWeight: FontWeight.normal),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18.0,3.0,18.0,8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text('Average time/patient(Mins): ',
+                          style: TextStyle(
+                              fontSize: 14.0/textScale,
+                              color: Colors.blueGrey[400],
+                              fontWeight: FontWeight.normal),
+                        ),
+                        Text((minutesCap/savedNTransRecords).toStringAsPrecision(3),
+                          style: TextStyle(
+                              fontSize: 30.0/textScale,
+                              color: Colors.blueGrey[600],
+                              fontWeight: FontWeight.normal),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             )
           ],

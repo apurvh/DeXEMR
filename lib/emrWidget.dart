@@ -148,8 +148,8 @@ class _EMRPageState extends State<EMRPage> {
         margin: const EdgeInsets.only(right: 10.0,top: 5.0,bottom: 5.0),
         decoration: new BoxDecoration(
           boxShadow: [BoxShadow(color: Colors.teal,blurRadius: 0.0,spreadRadius: 0.0)],
-
         ),
+
         child:
 
         Builder(builder: (context){
@@ -200,7 +200,6 @@ class _EMRPageState extends State<EMRPage> {
   ///ADD FEEDBACK TEXT FBK BY DOCTOR
   ///ADD ACCURACY FEEDBACK BY DOCTOR
   TextEditingController feedbackController = new TextEditingController();
-
 
 
   feedbackDoctorRoute(){
@@ -395,6 +394,18 @@ class _EMRPageState extends State<EMRPage> {
           _emrPageTileRender("Feedback by Doctor", document['fdb'].toString(),Colors.yellowAccent[100]),
 
 
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
+          _emrPageTileRender(" ", ' ',Colors.grey[50]),
           _emrPageTileRender(" ", ' ',Colors.grey[50]),
 
         ],

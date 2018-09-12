@@ -83,7 +83,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                     new ScopedModelDescendant<CounterModel>(
                       builder: (context, child, model) => new RawMaterialButton(
                             onPressed: () {
-                              print(">>>>>> jUST SAVE");
+                              print("....jUST SAVE");
                               _justSaveEventLog(stopWatch.elapsedMicroseconds);
 
                               //for paused state
@@ -96,15 +96,16 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                                     ));
                               } else {
                                 model.decrement();
-                                print("====>>>>  ${model.counter}");
+                                print(
+                                    "....Model Counter Value:  ${model.counter}");
                                 _audioRecorderFunction(model.counter, 0);
-
                                 Scaffold.of(context).showSnackBar(new SnackBar(
                                       content: new Text(
                                         "Uploading Audio File ...",
                                       ),
                                       duration: new Duration(seconds: 8),
                                     ));
+                                justSaveDialogue();
                               }
                             },
                             child: new Icon(
@@ -152,7 +153,8 @@ class _RecorderWidgetState extends State<RecorderWidget> {
                       builder: (context, child, model) => new RawMaterialButton(
                             onPressed: () {
                               print(">>>>>> SAVE AND SEND TO TRANSCRIPTION");
-                              _saveAndTransEventLog(stopWatch.elapsedMicroseconds);
+                              _saveAndTransEventLog(
+                                  stopWatch.elapsedMicroseconds);
                               //for paused state
                               if (pauseButtonState == 1) {
                                 Scaffold.of(context).showSnackBar(new SnackBar(
@@ -341,6 +343,109 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     }
   }
 
+  TextEditingController jSaveNameController = new TextEditingController();
+  TextEditingController jSaveSNameController = new TextEditingController();
+  TextEditingController jSaveNumController = new TextEditingController();
+  TextEditingController jSaveMetaController = new TextEditingController();
+
+  ///just save dialogue
+  justSaveDialogue() {
+    Navigator.of(context).push(new MaterialPageRoute(builder: (context) {
+      return new Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.only(top: 30.0,left: 15.0,right: 15.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      '   ADD DETAILS',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        })
+                  ],
+                ),
+                Divider(),
+                TextField(
+                  maxLines: 1,
+                  controller: jSaveNameController,
+                  decoration: new InputDecoration(
+                    labelText: 'Add Name..',
+                  ),
+                ),
+                TextField(
+                  maxLines: 1,
+                  controller: jSaveSNameController,
+                  decoration: new InputDecoration(
+                    labelText: 'Last Name..',
+                  ),
+                ),
+                TextField(
+                  maxLines: 1,
+                  controller: jSaveNumController,
+                  decoration: new InputDecoration(
+                    labelText: 'Numeric Identifier..',
+                  ),
+                ),
+                TextField(
+                  maxLines: 3,
+                  controller: jSaveMetaController,
+                  decoration: new InputDecoration(
+                    labelText: 'Metadata for search..',
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RaisedButton(
+                      onPressed: () {
+                        justSaveDialogueSubmit();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Save')),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }));
+  }
+
+  justSaveDialogueSubmit() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+    });
+    await Firestore.instance.collection('listP').document(docuId).updateData({
+      "st": 2,
+      "nn": jSaveNameController.text,
+      "ns": jSaveSNameController.text,
+      "ph": jSaveNumController.text,
+    }).then((val) {
+      print("....Just Save Done");
+      //CLEAR THE LIST
+      storageRedundancyList.clear();
+      print("....Storage Redun: " + storageRedundancyList.toString());
+    });
+    await Firestore.instance.collection('ptsP').add({
+      "ti": valueOfTI,
+      "usid": usid,
+      "nn": jSaveNameController.text,
+      "ns": jSaveSNameController.text,
+      "ph": jSaveNumController.text,
+      'mtdt': jSaveMetaController.text,
+    });
+    stopWatch.reset();
+  }
+
   //0 = STOP RECORDING
   //1 = Start RECORDING
   //2 = PAUSE RECORDING
@@ -381,6 +486,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         print(e);
       }
     }
+
     ///THIS IS PAUSE | Stopping recording
     else if (recordState == 2) {
       var recording = await AudioRecorder.stop();
@@ -394,12 +500,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         file.deleteSync(recursive: true);
       } else {
         String docuId = 'NoChnageInSt';
-        await fileUploadStorage(file, recording, docuId);
+        await fileUploadStorage(file, recording, docuId, 1);
       }
 
 //      globalRecorderState=0;
 
     }
+
     ///THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
       //Done Sound
@@ -421,7 +528,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       }
 
       globalRecorderState = 0;
-
     }
   }
 
@@ -444,7 +550,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   ///UPLOAD TO FIRE BASE STORAGE
-  Future fileUploadStorage(file, recording, docuId) async {
+  Future fileUploadStorage(file, recording, docuId, saveAndTranscribe) async {
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
@@ -476,7 +582,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       print(
           ">>>FILE UPLOADED| LOCAL FILE DELETED |Url array holdings: $bigListStorageBackup");
 
-      if (docuId != 'NoChnageInSt') {
+      if (docuId != 'NoChnageInSt' && saveAndTranscribe == 1) {
         Firestore.instance.collection('listP').document(docuId).updateData({
           'st': 0,
         }).then((doc) {
@@ -500,17 +606,19 @@ class _RecorderWidgetState extends State<RecorderWidget> {
   }
 
   ///FIRE STORE listP
+  String docuId;
+  int valueOfTI;
+
   Future listPEntry(saveAndTranscribe, file, recording) async {
+    valueOfTI = new DateTime.now().millisecondsSinceEpoch;
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-
-    String docuId;
     await Firestore.instance.collection('listP').add({
 //      "em": widget.email.replaceAll(".", " "),
-      "ti": new DateTime.now().millisecondsSinceEpoch,
+      "ti": valueOfTI,
       "usid": usid,
       "ty": saveAndTranscribe,
       "st": 1,
@@ -522,6 +630,11 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       storageRedundancyList.clear();
       print("Storage Redun: " + storageRedundancyList.toString());
     });
+
+    if (saveAndTranscribe == 0) {
+      print('...saveAndTranscribe = $saveAndTranscribe | Dialogue run');
+      justSaveDialogue();
+    }
 
     ///Update the Main counter
     String updateTotalTranscriptionKey;
@@ -545,11 +658,11 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         .updateData({
       'nre': updateTotalRecs + 1,
       'nrt': updateTotalTrans + saveAndTranscribe,
-      'nrm':updateTotalTime + stopWatch.elapsed.inMinutes+1,
+      'nrm': updateTotalTime + stopWatch.elapsed.inMinutes + 1,
     });
 
     stopWatch.reset();
-    await fileUploadStorage(file, recording, docuId);
+    await fileUploadStorage(file, recording, docuId, saveAndTranscribe);
 
     print(">>ALL DONE WITH");
   }
@@ -572,7 +685,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         //stop
         AudioRecorder.isRecording.then((vol) {
           if (vol == true) {
-
             if (globalRecorderState == 0) {
               print('>>Recorder is Pause--Stopped because of call');
               pauseButtonState = 1;
@@ -587,7 +699,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       } else if (event.stateC == 'false') {
         //resume
         if (globalRecorderState == 1) {
-
           if (Theme.of(context).platform == TargetPlatform.android) {
             print('>>Recorder is Resumed because of call | ANDROID');
             _audioRecorderFunction(1, 0);
@@ -609,7 +720,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+    if (usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2') {
       await widget.analytics.logEvent(
         name: 'justSave',
         parameters: <String, dynamic>{
@@ -627,7 +738,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+    if (usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2') {
       await widget.analytics.logEvent(
         name: 'saveAndTrans',
         parameters: <String, dynamic>{
