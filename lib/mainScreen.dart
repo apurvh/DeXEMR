@@ -357,21 +357,21 @@ class CounterModel extends Model {
   }
 
   void increment() {
-    // First, increment the counter
-    _scheduleNotification(1);
+
     _counter = 1;
     stopWatch.start();
-
+    _scheduleNotification(1);
     // Then notify all the listeners.
     notifyListeners();
   }
 
   void decrement() {
-    _scheduleNotification(0);
+
     _counter = 0;
     stopWatch.stop();
 //    stopWatch.reset();
 
+    _scheduleNotification(0);
     // Then notify all the listeners.
     notifyListeners();
   }

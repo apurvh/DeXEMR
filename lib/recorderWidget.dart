@@ -138,6 +138,34 @@ class _RecorderWidgetState extends State<RecorderWidget> {
               child: new Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 28.0),
+                    child: new ScopedModelDescendant<CounterModel>(
+                        builder: (context, child, model) =>
+                        new RawMaterialButton(
+                          onPressed: (){
+                            print("....CANcel Rec");
+                            _cancelRecEventLog();
+                            stopWatch.stop();
+                            stopWatch.reset();
+                            model.decrement();
+                            _audioRecorderFunction(9,0);
+                            setState(() {
+
+                            });
+                          },
+                        child: new Icon(
+                          Icons.close,
+                          size: 30.0,
+                          color: Colors.blueGrey[800],
+                        ),
+                        shape: new CircleBorder(),
+                        elevation: 2.0,
+                        fillColor: Colors.white,
+                        padding: const EdgeInsets.all(15.0),
+                      ),
+                    ),
+                  ),
                   new Container(
                     decoration: new BoxDecoration(
                         shape: BoxShape.circle,
@@ -491,7 +519,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     else if (recordState == 2) {
       var recording = await AudioRecorder.stop();
       File file = new File(recording.path);
-      print("Stop recording: ${recording.path} | File length: ${await file
+      print("....Stop recording: ${recording.path} | File length: ${await file
           .length()}");
 
       ///UPLOAD FAILS IF FILES SIZE > 40MB
@@ -507,6 +535,17 @@ class _RecorderWidgetState extends State<RecorderWidget> {
 
     }
 
+    ///This Cancels Recording
+    else if(recordState==9){
+      var recording = await AudioRecorder.stop();
+      File file = new File(recording.path);
+      file.deleteSync(recursive: true);
+      print("....Cancel recording | File Delete");
+      Scaffold.of(context).showSnackBar(
+          new SnackBar(content: new Text("Audio Note Cancelled..")));
+
+      globalRecorderState = 0;
+    }
     ///THIS IS STOP | REAL TIME DATABASE & Fire store IS UPDATED IS HERE
     else {
       //Done Sound
@@ -554,9 +593,9 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
-      print("UPLOADING TO LIST P | uid>> ${user.uid}");
+      print("....UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-    print(">>>UPLOADING FILE USING UPLOADTASK");
+    print("....UPLOADING FILE USING UPLOADTASK");
     StorageReference ref = FirebaseStorage.instance
         .ref()
         .child("Audio")
@@ -569,10 +608,10 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         ref.putFile(file, StorageMetadata(contentType: 'audio/m4a'));
 
     await uploadTask.future.catchError((error) {
-      print(">>Error IN UPLOAD" + error);
+      print("....Error IN UPLOAD" + error);
     });
 
-    print("File Uploaded == > ${recording.path.toString()}");
+    print("....File Uploaded == > ${recording.path.toString()}");
 
     ///Delete File
     ///Set st=0
@@ -580,13 +619,13 @@ class _RecorderWidgetState extends State<RecorderWidget> {
       //delete file
       file.deleteSync(recursive: true);
       print(
-          ">>>FILE UPLOADED| LOCAL FILE DELETED |Url array holdings: $bigListStorageBackup");
+          "....FILE UPLOADED| LOCAL FILE DELETED |Url array holdings: $bigListStorageBackup");
 
       if (docuId != 'NoChnageInSt' && saveAndTranscribe == 1) {
         Firestore.instance.collection('listP').document(docuId).updateData({
           'st': 0,
         }).then((doc) {
-          print('>>st value changed to st=0 ');
+          print('....st value changed to st=0 ');
         });
       }
     });
@@ -664,7 +703,7 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     stopWatch.reset();
     await fileUploadStorage(file, recording, docuId, saveAndTranscribe);
 
-    print(">>ALL DONE WITH");
+    print("....ALL DONE WITH");
   }
 
   ///PHONE PERMISSIONS AND STOP DURING PHONE
@@ -718,7 +757,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
-      print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
     if (usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2') {
       await widget.analytics.logEvent(
@@ -736,7 +774,6 @@ class _RecorderWidgetState extends State<RecorderWidget> {
     String usid;
     await auth.currentUser().then((user) {
       usid = user.uid;
-      print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
     if (usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2') {
       await widget.analytics.logEvent(
@@ -746,6 +783,18 @@ class _RecorderWidgetState extends State<RecorderWidget> {
         },
       );
       print('logEvent-_saveAndTransEventLog succeeded | ${new DateTime.now()}');
+    }
+  }
+  Future<Null> _cancelRecEventLog() async {
+    String usid;
+    await auth.currentUser().then((user) {
+      usid = user.uid;
+    });
+    if (usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2') {
+      await widget.analytics.logEvent(
+        name: 'cancelRecording',
+      );
+      print('logEvent-_cancelRecEventLog succeeded | ${new DateTime.now()}');
     }
   }
 }
