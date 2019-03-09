@@ -1,6 +1,6 @@
 # dex_for_doctor
 
-A new Flutter application.
+Tool
 
 ## Getting Started
 
