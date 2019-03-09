@@ -500,7 +500,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+    if(usid != ''){
       await widget.analytics.logEvent(
         name: 'checkScore',
       );
@@ -514,7 +514,7 @@ class _EMRListWidgetState extends State<EMRListWidget> {
       usid = user.uid;
       print("UPLOADING TO LIST P | uid>> ${user.uid}");
     });
-    if(usid != 'H0ZF7TpTjZNLzFPRBDnzX48surU2'){
+    if(usid != '#USID'){
       await widget.analytics.logEvent(
         name: 'checkEMR',
       );
